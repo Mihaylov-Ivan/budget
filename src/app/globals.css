@@ -49,3 +49,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom thin scrollbar for the whole page */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) var(--surface-1);
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--surface-1);
+  border-radius: 8px;
+}
