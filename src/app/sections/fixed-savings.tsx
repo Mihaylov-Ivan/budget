@@ -7,11 +7,11 @@ import { fixedSavings } from "../data";
 
 export default function FixedSavings() {
   return (
-    <section className="border border-[var(--surface-3)] rounded-lg p-6 sm:p-8 flex flex-col gap-6 bg-[var(--surface-1)]">
+    <section className="border border-[var(--surface-3)] rounded-lg p-6 sm:p-8 flex flex-col gap-4 bg-[var(--surface-1)]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
-          <span className="inline-block">🐖</span> Fixed Savings
+          Fixed Savings
         </h2>
         <Add label="Add Saving Goal" />
       </div>

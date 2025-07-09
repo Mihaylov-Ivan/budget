@@ -20,7 +20,7 @@ function SectionBlock({ title, items }: { title: string; items: { name: string; 
 
 export default function MonthlyExpenseEssentials() {
   return (
-    <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-6">
+    <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold flex items-center gap-2">
@@ -30,6 +30,7 @@ export default function MonthlyExpenseEssentials() {
       </div>
 
       {/* Monthly and Weekly Blocks */}
+      <BudgetItem name="Total" amount={1000} color="blue" highlight />
       <SectionBlock title="Monthly" items={monthlyBudget.essentials.monthly} />
       <SectionBlock title="Weekly" items={monthlyBudget.essentials.weekly} />
     </div>

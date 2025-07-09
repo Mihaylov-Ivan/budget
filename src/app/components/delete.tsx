@@ -11,7 +11,7 @@ export default function Delete({ onClick }: DeleteBtnProps) {
     <button
       onClick={onClick}
       title="Delete"
-      className="p-2 rounded-md border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
+      className="p-2 rounded-lg border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

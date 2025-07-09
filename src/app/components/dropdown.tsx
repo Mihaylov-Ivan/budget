@@ -14,7 +14,7 @@ export default function Dropdown({ initial }: DropdownProps) {
     <select
       value={selected}
       onChange={(e) => setSelected(e.target.value)}
-      className="border border-[var(--surface-3)] rounded-lg px-3 py-2 text-sm bg-[var(--surface-1)] focus:outline-none"
+      className="border border-[var(--surface-3)] rounded-lg px-3 py-2 text-sm bg-[var(--surface-1)] focus:outline-none hover:bg-[var(--surface-3)]"
     >
       {months.map((month) => (
         <option key={month} value={month} className="bg-[var(--surface-1)]">

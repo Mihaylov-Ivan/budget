@@ -11,7 +11,7 @@ export default function Edit({ onClick }: EditBtnProps) {
     <button
       onClick={onClick}
       title="Edit"
-      className="p-2 rounded-md focus:outline-none border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
+      className="p-2 rounded-lg focus:outline-none border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

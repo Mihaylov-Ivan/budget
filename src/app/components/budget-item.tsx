@@ -23,7 +23,7 @@ export default function BudgetItem({ name, amount, color, highlight = false }: B
   const bgClass = highlight ? "bg-[var(--surface-3)]" : "bg-[var(--surface-2)]";
 
   return (
-    <div className={`${bgClass} rounded-md px-4 py-2 flex items-center justify-between ${highlight ? "font-semibold" : ""}`}
+    <div className={`${bgClass} rounded-lg px-4 py-2 flex items-center justify-between ${highlight ? "font-semibold" : ""}`}
       style={{ color: `var(--${color})` }}>
       <span style={{ color: `var(--${color})` }}>{name}</span>
       <span style={{ color: `var(--${color})` }}>{formatter.format(amount)}</span>

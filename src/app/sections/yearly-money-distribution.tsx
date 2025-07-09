@@ -4,7 +4,7 @@ import { yearlyCards } from "../data";
 
 export default function YearlyMoneyDistribution() {
   return (
-    <section className="border border-[var(--surface-3)] rounded-lg p-6 sm:p-8 flex flex-col gap-6 mt-8 bg-[var(--surface-1)]">
+    <section className="border border-[var(--surface-3)] rounded-lg p-6 sm:p-8 flex flex-col gap-4 bg-[var(--surface-1)]">
       <h2 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
         Yearly Money Distribution
       </h2>

@@ -19,7 +19,7 @@ const pages: SubpageKey[] = [
 
 export default function SubpageSelector({ value, onChange }: SubpageSelectorProps) {
   return (
-    <div className="w-full flex flex-col sm:flex-row gap-2 bg-[var(--surface-2)] p-2 rounded-md overflow-x-auto">
+    <div className="w-full flex flex-col sm:flex-row gap-2 bg-[var(--surface-1)] p-2 rounded-lg overflow-x-auto">
       {pages.map((page) => (
         <SubpageSelectorBtn
           key={page}

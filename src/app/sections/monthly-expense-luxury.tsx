@@ -20,7 +20,7 @@ function Block({ title, items }: { title: string; items: { name: string; amount:
 
 export default function MonthlyExpenseLuxury() {
   return (
-    <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-6">
+    <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold flex items-center gap-2">
@@ -28,7 +28,7 @@ export default function MonthlyExpenseLuxury() {
         </h3>
         <Add label="Add Luxury Item" />
       </div>
-
+      <BudgetItem name="Total" amount={1000} color="purple" highlight />
       <Block title="Monthly" items={monthlyBudget.luxury.monthly} />
       <Block title="Weekly" items={monthlyBudget.luxury.weekly} />
     </div>
