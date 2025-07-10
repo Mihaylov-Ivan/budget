@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
-import { yearlyExpenses as initialExpenses } from "../data";
+import { useState } from "react";
 import Add from "../components/add";
-import YearlyExpense from "../components/yearly-expense";
+import Button from "../components/button";
 import EditBtn from "../components/edit";
+import YearlyExpense from "../components/yearly-expense";
+import { yearlyExpenses as initialExpenses } from "../data";
 
 export default function YearlyExpenses() {
   const [editing, setEditing] = useState(false);
@@ -23,7 +24,7 @@ export default function YearlyExpenses() {
       copy[index] = {
         ...copy[index],
         [field]:
-          field === "name" || field === "totalShouldBe"
+          field === "name" || field === "totalShouldBe" || field === "startMonth"
             ? value
             : value === "" ? 0 : parseFloat(value),
       };
@@ -53,6 +54,9 @@ export default function YearlyExpenses() {
                 Expense
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
+                Start Month
+              </th>
+              <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
                 Total
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
@@ -63,6 +67,9 @@ export default function YearlyExpenses() {
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
                 Saved
+              </th>
+              <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
+                Missed
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
                 Used
@@ -86,6 +93,14 @@ export default function YearlyExpenses() {
                       type="text"
                       value={exp.name}
                       onChange={(e) => handleFieldChange(idx, "name", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="text"
+                      value={exp.startMonth}
+                      onChange={(e) => handleFieldChange(idx, "startMonth", e.target.value)}
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
@@ -128,6 +143,15 @@ export default function YearlyExpenses() {
                     <input
                       type="number"
                       step="0.01"
+                      value={exp.missed}
+                      onChange={(e) => handleFieldChange(idx, "missed", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="number"
+                      step="0.01"
                       value={exp.used}
                       onChange={(e) => handleFieldChange(idx, "used", e.target.value)}
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
@@ -143,12 +167,18 @@ export default function YearlyExpenses() {
                     />
                   </td>
                   <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2">
-                    <button
+                    <Button
+                      label="Saved"
+                      onClick={() => { /* TODO: implement saved action */ }}
+                    />
+                    <Button
+                      label="Missed"
+                      onClick={() => { /* TODO: implement missed action */ }}
+                    />
+                    <Button
+                      label="Delete"
                       onClick={() => setExpenses((prev) => prev.filter((_, i) => i !== idx))}
-                      className="p-2 rounded-lg border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
-                    >
-                      Delete
-                    </button>
+                    />
                   </td>
                 </tr>
               ))

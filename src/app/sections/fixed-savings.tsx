@@ -59,6 +59,7 @@ export default function FixedSavings() {
               </th>
               {editing && (
                 <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
+                  Actions
                 </th>
               )}
             </tr>

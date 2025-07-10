@@ -109,6 +109,7 @@ export const fixedSavings: FixedSavings[] = [
 // Yearly expenses -----------------------------------------------------------
 export type YearlyExpenses = {
   name: string;
+  startMonth: (typeof months)[number];
   total: number;
   totalShouldBe: string;
   monthlySaving: number;
@@ -120,7 +121,8 @@ export type YearlyExpenses = {
 
 export const yearlyExpenses: YearlyExpenses[] = [
   {
-    name: "Summer Holiday (August)",
+    name: "Summer Holiday",
+    startMonth: "August",
     total: 500,
     totalShouldBe: "500 - 1200",
     monthlySaving: 41.67,
@@ -130,7 +132,8 @@ export const yearlyExpenses: YearlyExpenses[] = [
     available: 773,
   },
   {
-    name: "Winter Holiday (January)",
+    name: "Winter Holiday",
+    startMonth: "January",
     total: 0,
     totalShouldBe: "500 - 1200",
     monthlySaving: 0,
@@ -140,7 +143,8 @@ export const yearlyExpenses: YearlyExpenses[] = [
     available: 0,
   },
   {
-    name: "Phone (August)",
+    name: "Phone",
+    startMonth: "August",
     total: 2200,
     totalShouldBe: "2200.00",
     monthlySaving: 45.83,
@@ -150,7 +154,8 @@ export const yearlyExpenses: YearlyExpenses[] = [
     available: 0,
   },
   {
-    name: "Laptop (August)",
+    name: "Laptop",
+    startMonth: "August",
     total: 5000,
     totalShouldBe: "5000.00",
     monthlySaving: 104.17,
@@ -160,7 +165,8 @@ export const yearlyExpenses: YearlyExpenses[] = [
     available: 0,
   },
   {
-    name: "Perfumes (August)",
+    name: "Perfumes",
+    startMonth: "August",
     total: 250,
     totalShouldBe: "250 - 500",
     monthlySaving: 20.83,
