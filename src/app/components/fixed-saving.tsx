@@ -1,15 +1,19 @@
 import React from "react";
-import { FixedSaving } from "../data";
-import Edit from "./edit";
+import { FixedSavings } from "../data";
 import Delete from "./delete";
 
-export default function FixedExpense({
+interface FixedSavingProps extends FixedSavings {
+  editing: boolean;
+}
+
+export default function FixedSaving({
   name,
   total,
   saved,
   used,
   available,
-}: FixedSaving) {
+  editing,
+}: FixedSavingProps) {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -38,10 +42,11 @@ export default function FixedExpense({
       <td className="py-4 px-3 whitespace-nowrap text-sm">
         {formatValue(available)}
       </td>
-      <td className="py-4 px-3 whitespace-nowrap text-sm flex gap-2">
-        <Edit />
-        <Delete />
-      </td>
+      {editing && (
+        <td className="py-4 px-3 whitespace-nowrap text-sm flex gap-2">
+          <Delete />
+        </td>
+      )}
     </tr>
   );
 } 

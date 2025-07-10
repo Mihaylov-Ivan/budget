@@ -50,7 +50,7 @@ export const yearlyCards: YearlyCardData[] = [
 ];
 
 // Fixed savings -------------------------------------------------------------
-export type FixedSaving = {
+export type FixedSavings = {
   name: string;
   total: number | "Unlimited";
   saved: number;
@@ -58,7 +58,7 @@ export type FixedSaving = {
   available: number;
 };
 
-export const fixedSavings: FixedSaving[] = [
+export const fixedSavings: FixedSavings[] = [
   { name: "Emergency", total: 1000, saved: 0, used: 0, available: 0 },
   {
     name: "6 Months Living Support",
@@ -107,7 +107,7 @@ export const fixedSavings: FixedSaving[] = [
 ];
 
 // Yearly expenses -----------------------------------------------------------
-export type YearlyExpense = {
+export type YearlyExpenses = {
   name: string;
   total: number;
   totalShouldBe: string;
@@ -118,7 +118,7 @@ export type YearlyExpense = {
   available: number;
 };
 
-export const yearlyExpenses: YearlyExpense[] = [
+export const yearlyExpenses: YearlyExpenses[] = [
   {
     name: "Summer Holiday (August)",
     total: 500,
@@ -173,36 +173,74 @@ export const yearlyExpenses: YearlyExpense[] = [
 
 // Monthly budget -----------------------------------------------------------
 export const monthlyBudget = {
-  income: [
-    { name: "Hydrogenera", amount: 3000 },
-    { name: "Student Loan", amount: 31.68 },
-  ],
+  income: [{ name: "Hydrogenera", amount: 3000 }],
   essentials: {
     monthly: [
-      { name: "One Drive", amount: 7.1 },
-      { name: "iCloud", amount: 2.35 },
-      { name: "Barber", amount: 45 },
-      { name: "Meds", amount: 10 },
-      { name: "Toiletries", amount: 10 },
-      { name: "Transport", amount: 110 },
-      { name: "Phone", amount: 28 },
-      { name: "Sports", amount: 40 },
-      { name: "Internet", amount: 20 },
-      { name: "Banking Tax", amount: 1.99 },
-      { name: "Bills", amount: 100 },
-      { name: "Rent", amount: 700 },
+      {
+        id: "nextMonth",
+        items: [{ name: "Next Month Savings", amount: 465.83 }],
+      },
+      {
+        id: "expenses",
+        items: [
+          { name: "One Drive", amount: 7.1 },
+          { name: "iCloud", amount: 2.35 },
+          { name: "Barber", amount: 25 },
+          { name: "Meds", amount: 10 },
+          { name: "Toiletries", amount: 0 },
+          { name: "Transport", amount: 80 },
+          { name: "Phone", amount: 0 },
+          { name: "Sports", amount: 40 },
+          { name: "Internet", amount: 0 },
+          { name: "Bills", amount: 0 },
+          { name: "Rent", amount: 0 },
+        ],
+      },
+      {
+        id: "savings",
+        items: [
+          { name: "Apparel Saving", amount: 0 },
+          { name: "Eset Antivirus Savings", amount: 0 },
+        ],
+      },
     ],
     weekly: [{ name: "Food", amount: 100 }],
   },
   luxury: {
     monthly: [
-      { name: "Little Things", amount: 10 },
-      { name: "Activities", amount: 0 },
-      { name: "Birthday Present", amount: 50 },
-      { name: "Going Out", amount: 100 },
-      { name: "Dating", amount: 30 },
+      {
+        id: "expenses",
+        items: [
+          { name: "Little Things", amount: 10 },
+          { name: "Massage", amount: 0 },
+          { name: "Activities", amount: 0 },
+          { name: "Birthday Present", amount: 50 },
+          { name: "Going Out", amount: 80 },
+        ],
+      },
+      {
+        id: "savings",
+        items: [
+          { name: "Fixed Expenses Savings (20%+)", amount: 6324.34 },
+          { name: "Mortgage Deposit Fixed Expenses Savings (10%)", amount: 0 },
+          { name: "Summer Holiday Savings", amount: 0 },
+          { name: "Winter Holiday Savings", amount: 0 },
+          { name: "Travelling Savings", amount: 0 },
+          { name: "Phone Savings", amount: 0 },
+          { name: "Laptop Savings", amount: 0 },
+          { name: "Concerts Savings", amount: 0 },
+          { name: "Birthday Party Savings", amount: 0 },
+          { name: "Perfumes Savings", amount: 0 },
+          { name: "Spotify Savings", amount: 2.67 },
+          { name: "Car Insurance Savings", amount: 0 },
+          { name: "Car Tax Savings", amount: 0 },
+          { name: "Car MOT Savings", amount: 0 },
+          { name: "Renovations Savings", amount: 0 },
+        ],
+      },
     ],
     weekly: [
+      { name: "Dating", amount: 30 },
       { name: "Going Out", amount: 20 },
       { name: "Eat Out", amount: 10 },
     ],
@@ -218,11 +256,6 @@ export const monthlyBudget = {
 
 // Months list --------------------------------------------------------------
 export const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
   "June",
   "July",
   "August",
@@ -230,4 +263,9 @@ export const months = [
   "October",
   "November",
   "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
 ] as const;

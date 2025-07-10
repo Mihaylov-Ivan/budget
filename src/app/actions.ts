@@ -1,0 +1,62 @@
+// Helper functions and actions to interact with MongoDB
+import mongoose from "mongoose";
+
+const MONGODB_URI = process.env.MONGODB_URI as string;
+
+if (!MONGODB_URI) {
+  throw new Error(
+    "Please define the MONGODB_URI environment variable inside .env"
+  );
+}
+
+interface GlobalMongoose {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoose: GlobalMongoose;
+}
+
+let cached: GlobalMongoose = global._mongoose || { conn: null, promise: null };
+
+async function dbConnect() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI);
+  }
+  cached.conn = await cached.promise;
+  global._mongoose = cached;
+  return cached.conn;
+}
+
+// Minimal Budget schema just for reading
+const BudgetSchema = new mongoose.Schema(
+  {
+    userId: mongoose.Schema.Types.ObjectId,
+    year: Number,
+    yearlyDistribution: {
+      receivedIncome: Number,
+      shouldHave: Number,
+      actuallyHave: Number,
+      extra: Number,
+    },
+    fixedSavings: [Object],
+    yearlyExpenses: [Object],
+    monthlyBudget: Object,
+  },
+  { collection: "budgets", strict: false }
+);
+
+export async function getBudgetData(userId?: string, year?: number) {
+  const conn = await dbConnect();
+  const Budget = conn.models.Budget || conn.model("Budget", BudgetSchema);
+
+  const query: Record<string, unknown> = {};
+  if (userId) query.userId = new mongoose.Types.ObjectId(userId);
+  if (year) query.year = year;
+
+  return Budget.findOne(query).lean();
+}

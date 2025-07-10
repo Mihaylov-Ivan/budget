@@ -1,9 +1,12 @@
 import React from "react";
-import { YearlyExpense } from "../data";
-import Edit from "./edit";
+import { YearlyExpenses } from "../data";
 import Delete from "./delete";
 
-export default function YearlyExpenseRow({
+interface YearlyExpenseProps extends YearlyExpenses {
+  editing: boolean;
+}
+
+export default function YearlyExpense({
   name,
   total,
   totalShouldBe,
@@ -12,7 +15,8 @@ export default function YearlyExpenseRow({
   missed, // not displayed but preserved for future
   used,
   available,
-}: YearlyExpense) {
+  editing,
+}: YearlyExpenseProps) {
   const currency = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -44,10 +48,11 @@ export default function YearlyExpenseRow({
       <td className="py-4 px-3 whitespace-nowrap text-sm">
         {formatNum(available)}
       </td>
-      <td className="py-4 px-3 whitespace-nowrap text-sm flex gap-2">
-        <Edit />
-        <Delete />
-      </td>
+      {editing && (
+        <td className="py-4 px-3 whitespace-nowrap text-sm flex gap-2">
+          <Delete />
+        </td>
+      )}
     </tr>
   );
 } 
