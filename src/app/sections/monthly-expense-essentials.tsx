@@ -139,13 +139,14 @@ export default function MonthlyExpenseEssentials() {
             onChange={(e) => onChange(idx, "amount", e.target.value)}
             className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
           />
-          <input
+          {/* <input
             type="number"
             step="0.01"
             value={it.shouldBe ?? 0}
             onChange={(e) => onChange(idx, "shouldBe", e.target.value)}
             className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
-          />
+          /> */}
+          <span className="w-20 text-right">0</span>
           <DeleteBtn onClick={() => onDelete(idx)} />
         </div>
       ))}

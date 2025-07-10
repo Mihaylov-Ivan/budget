@@ -138,23 +138,12 @@ export default function MonthlyExpenseLuxury() {
             onChange={(e) => onChange(idx, "amount", e.target.value)}
             className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
           />
-          <input
-            type="number"
-            step="0.01"
-            value={it.shouldBe ?? 0}
-            onChange={(e) => onChange(idx, "shouldBe", e.target.value)}
-            className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
-          />
+          <span className="w-20 text-right">0</span>
           <DeleteBtn onClick={() => onDelete(idx)} />
         </div>
       ))}
     </div>
   );
-
-  const SECTION_TITLES: Record<string, string> = {
-    expenses: "Expenses",
-    savings: "Savings",
-  };
 
   return (
     <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">
