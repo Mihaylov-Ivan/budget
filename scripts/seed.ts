@@ -13,7 +13,7 @@ const {
 } = require("./data");
 
 // After loading data, define target years and months
-const yearsToSeed = [2024, 2025, 2026, 2027, 2028];
+const yearsToSeed = [2025];
 const fiscalMonths = [
   "June",
   "July",

@@ -25,7 +25,10 @@ async function dbConnect() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI);
+    // Explicitly connect to the "budget_2025" database so we always read from the correct DB
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      dbName: "budget_2025",
+    });
   }
   cached.conn = await cached.promise;
   global._mongoose = cached;
