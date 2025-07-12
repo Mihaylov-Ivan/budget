@@ -5,6 +5,7 @@ import BudgetItem from "../components/budget-item";
 import Add from "../components/add";
 import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
+import { useAmounts } from "../store/useAmounts";
 
 function Block({ title = "", items }: { title?: string; items: { name: string; amount: number }[] }) {
   return (
@@ -37,16 +38,25 @@ interface Props {
     weekly: Item[];
   };
   month: string;
+  daysInMonth: number;
+  budgetData?: any; // Add budgetData to access income and essentials
 }
 
-export default function MonthlyExpenseLuxury({ luxury, month }: Props) {
+export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budgetData }: Props) {
   const [editing, setEditing] = useState(false);
   const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(luxury.monthly)));
   const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(luxury.weekly)));
+  const [percentage, setPercentage] = useState(20); // Default 20%
+  const { availableMoney, essentialsTotal } = useAmounts();
 
-  const total = [...monthlySections.flatMap((s) => s.items), ...weekly].reduce(
-    (s, i) => s + i.amount, 0
-  );
+  // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
+  const monthlyTotal = monthlySections.flatMap((s) => s.items).reduce((s, i) => s + i.amount, 0);
+  const weeklyTotal = weekly.reduce((s, i) => s + i.amount, 0);
+  const weeklyAdjusted = (weeklyTotal / 7) * daysInMonth;
+  const total = monthlyTotal + weeklyAdjusted;
+
+  const availableForLuxury = (availableMoney - essentialsTotal) * (percentage / 100);
+  const unassigned = availableForLuxury - total;
 
   const saveChanges = () => {
     const payload = { monthly: monthlySections, weekly };
@@ -173,6 +183,24 @@ export default function MonthlyExpenseLuxury({ luxury, month }: Props) {
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>
+
+      {/* Percentage and Available rows */}
+      <div className="flex items-center gap-2">
+        <span className="flex-1 font-medium text-[var(--purple)]">Percentage</span>
+        <input
+          type="number"
+          min="0"
+          max="100"
+          step="0.1"
+          value={percentage}
+          onChange={(e) => setPercentage(parseFloat(e.target.value) || 0)}
+          className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
+        />
+        <span className="text-[var(--purple)]">%</span>
+      </div>
+
+      <BudgetItem name="Available" amount={availableForLuxury} color="purple" highlight />
+      <BudgetItem name="Unassigned" amount={unassigned} color="purple" warning={unassigned < 0} highlight />
       <BudgetItem name="Total" amount={total} color="purple" highlight />
       <div className="flex flex-col gap-2">
         {editing ? (

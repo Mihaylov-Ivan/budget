@@ -5,6 +5,7 @@ import BudgetItem from "../components/budget-item";
 import Add from "../components/add";
 import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
+import { useAmounts } from "../store/useAmounts";
 
 interface Item { name: string; amount: number; }
 interface Props {
@@ -12,13 +13,25 @@ interface Props {
     monthly: Item[];
   };
   month: string;
+  daysInMonth: number;
 }
 
-export default function MonthlyExpenseInvestments({ investments, month }: Props) {
+export default function MonthlyExpenseInvestments({ investments, month, daysInMonth }: Props) {
   const [editing, setEditing] = useState(false);
   const [items, setItems] = useState<Item[]>(JSON.parse(JSON.stringify(investments.monthly)));
+  const [percentage, setPercentage] = useState(100); // Default 100%
+  const { availableMoney, essentialsTotal } = useAmounts();
 
-  const total = items.reduce((sum: number, i: Item) => sum + i.amount, 0);
+  // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
+  // Since investments only have monthly items, weekly total is 0
+  const monthlyTotal = items.reduce((sum: number, i: Item) => sum + i.amount, 0);
+  const weeklyTotal = 0; // No weekly investments
+  const weeklyAdjusted = (weeklyTotal / 7) * daysInMonth;
+  const total = monthlyTotal + weeklyAdjusted;
+
+  // Calculate available for investments (subtract essentialsTotal)
+  const availableForInvestments = (availableMoney - essentialsTotal) * (percentage / 100);
+  const unassigned = availableForInvestments - total;
 
   const saveChanges = () => {
     const payload = { monthly: items };
@@ -59,6 +72,23 @@ export default function MonthlyExpenseInvestments({ investments, month }: Props)
       </div>
 
       <div className="flex flex-col gap-3">
+        {/* Percentage and Available rows */}
+        <div className="flex items-center gap-2">
+          <span className="flex-1 font-medium text-[var(--green)]">Percentage</span>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            value={percentage}
+            onChange={(e) => setPercentage(parseFloat(e.target.value) || 0)}
+            className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
+          />
+          <span className="text-[var(--green)]">%</span>
+        </div>
+        <BudgetItem name="Available" amount={availableForInvestments} color="green" highlight />
+        <BudgetItem name="Unassigned" amount={unassigned} color="green" warning={unassigned < 0} highlight />
+        <BudgetItem name="Total Investments" amount={total} color="green" highlight />
         <div className="flex flex-col gap-2">
           {editing
             ? items.map((inv: Item, idx: number) => (
@@ -83,7 +113,6 @@ export default function MonthlyExpenseInvestments({ investments, month }: Props)
               <BudgetItem key={inv.name} name={inv.name} amount={inv.amount} color="green" />
             ))}
         </div>
-        <BudgetItem name="Total Investments" amount={total} color="green" highlight />
       </div>
     </div >
   );

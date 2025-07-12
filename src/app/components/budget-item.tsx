@@ -4,6 +4,7 @@ interface BudgetItemProps {
   name: string;
   amount: number;
   color: "green" | "blue" | "purple";
+  warning?: boolean;
   highlight?: boolean;
 }
 
@@ -13,7 +14,7 @@ const textColors = {
   purple: "var(--purple)",
 } as const;
 
-export default function BudgetItem({ name, amount, color, highlight = false }: BudgetItemProps) {
+export default function BudgetItem({ name, amount, color, warning = false, highlight = false }: BudgetItemProps) {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -23,10 +24,10 @@ export default function BudgetItem({ name, amount, color, highlight = false }: B
   const bgClass = highlight ? "bg-[var(--surface-3)]" : "bg-[var(--surface-2)]";
 
   return (
-    <div className={`${bgClass} rounded-lg px-4 py-2 flex items-center justify-between ${highlight ? "font-semibold" : ""}`}
+    <div className={`${bgClass} rounded-lg px-4 py-2 flex items-center justify-between ${highlight ? "font-semibold" : ""} ${warning ? "bg-red-500 !text-white" : ""}`}
       style={{ color: `var(--${color})` }}>
-      <span style={{ color: `var(--${color})` }}>{name}</span>
-      <span style={{ color: `var(--${color})` }}>{formatter.format(amount)}</span>
+      <span>{name}</span>
+      <span>{formatter.format(amount)}</span>
     </div>
   );
 } 

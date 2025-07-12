@@ -1,21 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BudgetItem from "../components/budget-item";
 import Add from "../components/add";
 import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
+import { useAmounts } from "../store/useAmounts";
 
 interface Item { name: string; amount: number; }
 
 interface Props {
   income: Item[];
   month: string;
+  budgetData?: any; // Add budgetData to access previous month's income
 }
 
-export default function MonthlyExpenseIncome({ income: initialIncome, month }: Props) {
+export default function MonthlyExpenseIncome({ income: initialIncome, month, budgetData }: Props) {
   const [editing, setEditing] = useState(false);
   const [income, setIncome] = useState(JSON.parse(JSON.stringify(initialIncome)));
+  const { setAvailableMoney } = useAmounts();
 
   // helper to persist whole income array
   const saveChanges = () => {
@@ -27,6 +30,43 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month }: P
   };
 
   const total = income.reduce((sum: number, item: Item) => sum + item.amount, 0);
+
+  // Calculate available money from previous month's income + next month savings
+  const getPreviousMonthIncome = () => {
+    if (!budgetData?.monthlyBudgets) return 0;
+
+    const months = [
+      "June", "July", "August", "September", "October", "November", "December",
+      "January", "February", "March", "April", "May"
+    ];
+
+    const currentMonthIndex = months.indexOf(month);
+    const previousMonthIndex = currentMonthIndex === 0 ? months.length - 1 : currentMonthIndex - 1;
+    const previousMonth = months[previousMonthIndex];
+
+    const previousMonthBudget = budgetData.monthlyBudgets.find((b: any) => b.month === previousMonth);
+    if (!previousMonthBudget) return 0;
+
+    // Find the nextMonth section in the previous month's essentials
+    const nextMonthSection = previousMonthBudget.essentials?.monthly?.find((s: any) => s.id === 'nextMonth' || s.id === 'nextMonth,');
+    let nextMonthSavings = 0;
+    if (nextMonthSection?.items) {
+      const nextMonthItem = nextMonthSection.items.find((item: any) => item.name === 'Next Month Savings' || item.name === 'Next Month Savings,');
+      nextMonthSavings = nextMonthItem?.amount ?? 0;
+    }
+
+    // Calculate previous month's income
+    const previousMonthIncome = previousMonthBudget.income?.reduce((sum: number, item: Item) => sum + item.amount, 0) ?? 0;
+
+    return previousMonthIncome + nextMonthSavings;
+  };
+
+  const availableMoney = getPreviousMonthIncome();
+
+  // Update the store when availableMoney changes
+  useEffect(() => {
+    setAvailableMoney(availableMoney);
+  }, [availableMoney, setAvailableMoney]);
 
   const handleFieldChange = (index: number, field: "name" | "amount", value: string) => {
     setIncome((prev: Item[]) => {
@@ -84,6 +124,7 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month }: P
             ))}
         </div>
         <BudgetItem name="Total Income" amount={total} color="green" highlight />
+        <BudgetItem name="Available Money" amount={availableMoney} color="green" highlight />
       </div>
     </div>
   );

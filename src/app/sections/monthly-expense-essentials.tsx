@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Add from "../components/add";
 import BudgetItem from "../components/budget-item";
 import DeleteBtn from "../components/delete";
 import EditBtn from "../components/edit";
+import { useAmounts } from "../store/useAmounts";
 
 type Item = { name: string; amount: number; shouldBe?: number };
 type Section = { id: string; items: Item[] };
@@ -15,6 +16,7 @@ interface Props {
     weekly: Item[];
   };
   month: string;
+  daysInMonth: number;
 }
 
 function SectionBlock({ title = "", items }: { title?: string; items: Item[] }) {
@@ -30,13 +32,22 @@ function SectionBlock({ title = "", items }: { title?: string; items: Item[] }) 
   );
 }
 
-export default function MonthlyExpenseEssentials({ essentials, month }: Props) {
+export default function MonthlyExpenseEssentials({ essentials, month, daysInMonth }: Props) {
   const [editing, setEditing] = useState(false);
   const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(essentials.monthly)));
   const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(essentials.weekly)));
+  const { setEssentialsTotal } = useAmounts();
 
-  // Calculate total every render
-  const total = [...monthlySections.flatMap(s => s.items), ...weekly].reduce((s, i) => s + i.amount, 0);
+  // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
+  const monthlyTotal = monthlySections.flatMap(s => s.items).reduce((s, i) => s + i.amount, 0);
+  const weeklyTotal = weekly.reduce((s, i) => s + i.amount, 0);
+  const weeklyAdjusted = (weeklyTotal / 7) * daysInMonth;
+  const total = monthlyTotal + weeklyAdjusted;
+
+  // Update the store when total changes
+  useEffect(() => {
+    setEssentialsTotal(total);
+  }, [total, setEssentialsTotal]);
 
   const saveChanges = () => {
     const payload = { monthly: monthlySections, weekly };

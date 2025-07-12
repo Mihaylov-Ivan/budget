@@ -150,6 +150,7 @@ const monthlyBudget = {
     weekly: [{ name: "Food", amount: 100 }],
   },
   luxury: {
+    percentage: 90,
     monthly: [
       {
         id: "expenses",
@@ -192,6 +193,7 @@ const monthlyBudget = {
     ],
   },
   investments: {
+    percentage: 10,
     monthly: [
       { name: "S&P500 (45%)", amount: 63 },
       { name: "Business & Real Estate Savings (45%)", amount: 62.99 },

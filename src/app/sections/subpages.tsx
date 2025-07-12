@@ -13,9 +13,10 @@ interface Props {
   yearlyExpenses: YearlyExpenseType[];
   monthlyBudget: any;
   month: string;
+  budgetData?: any;
 }
 
-export default function Subpages({ fixedSavings, yearlyExpenses, monthlyBudget, month }: Props) {
+export default function Subpages({ fixedSavings, yearlyExpenses, monthlyBudget, month, budgetData }: Props) {
   const [active, setActive] = useState<SubpageKey>("Fixed Savings");
 
   return (
@@ -26,7 +27,7 @@ export default function Subpages({ fixedSavings, yearlyExpenses, monthlyBudget, 
       {/* Content */}
       {active === "Fixed Savings" && <FixedSavings data={fixedSavings} />}
       {active === "Yearly Expenses" && <YearlyExpenses data={yearlyExpenses} />}
-      {active === "Monthly Budget" && <MonthlyBudget key={month} budget={monthlyBudget} month={month} />}
+      {active === "Monthly Budget" && <MonthlyBudget key={month} budget={monthlyBudget} month={month} budgetData={budgetData} />}
       {active === "Overview" && <Overview savings={fixedSavings} budget={monthlyBudget} />}
     </section>
   );

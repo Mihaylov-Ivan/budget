@@ -73,7 +73,6 @@ export default function Home() {
           <Dropdown value={selectedMonth} onChange={setSelectedMonth} />
         </div>
       </header>
-
       {/* Sections */}
       <YearlyMoneyDistribution distribution={budgetData.yearlyDistribution} />
       {monthlyBudget && (
@@ -82,6 +81,7 @@ export default function Home() {
           yearlyExpenses={budgetData.yearlyExpenses}
           monthlyBudget={monthlyBudget}
           month={selectedMonth}
+          budgetData={budgetData}
         />
       )}
     </div>
