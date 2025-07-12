@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Add from "../components/add";
 import Button from "../components/button";
 import EditBtn from "../components/edit";
@@ -9,11 +9,16 @@ import type { YearlyExpenses as YearlyExpenseType } from "../data";
 
 interface Props {
   data: YearlyExpenseType[];
+  setData?: (data: YearlyExpenseType[]) => void;
 }
 
-export default function YearlyExpenses({ data }: Props) {
+export default function YearlyExpenses({ data, setData }: Props) {
   const [editing, setEditing] = useState(false);
   const [expenses, setExpenses] = useState(data);
+
+  useEffect(() => {
+    setExpenses(data);
+  }, [data]);
 
   const toggleEditing = () => {
     if (editing) {
@@ -22,6 +27,7 @@ export default function YearlyExpenses({ data }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ yearlyExpenses: expenses }),
       }).catch(console.error);
+      setData?.(expenses); // update parent state
     }
     setEditing((p) => !p);
   };

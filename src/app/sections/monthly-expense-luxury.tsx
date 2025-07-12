@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BudgetItem from "../components/budget-item";
 import Add from "../components/add";
 import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
 import { useAmounts } from "../store/useAmounts";
+import { YearlyExpenses as YearlyExpenseType } from "../data";
 
 function Block({ title = "", items }: { title?: string; items: { name: string; amount: number }[] }) {
   return (
@@ -48,6 +49,38 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(luxury.weekly)));
   const [percentage, setPercentage] = useState(20); // Default 20%
   const { availableMoney, essentialsTotal } = useAmounts();
+
+  // --- Helper to map a savings item name to a yearly expense name ---
+  const mapSavingsToYearly = (name: string) => {
+    // Remove the trailing " Savings" and anything that comes after
+    let base = name.replace(/\s*Savings.*$/i, "").trim();
+    // Remove trailing commas if any
+    base = base.replace(/,$/, "");
+    return base;
+  };
+
+  // Populate `shouldBe` for savings items based on yearly expenses monthlySaving
+  useEffect(() => {
+    if (!budgetData?.yearlyExpenses) return;
+
+    setMonthlySections((prev) => {
+      const clone: Section[] = JSON.parse(JSON.stringify(prev));
+      const savingsSection = clone.find((s) => s.id === "savings");
+      if (savingsSection) {
+        savingsSection.items = savingsSection.items.map((it) => {
+          const yearlyName = mapSavingsToYearly(it.name);
+          const match: YearlyExpenseType | undefined = budgetData.yearlyExpenses.find(
+            (y: any) => y.name === yearlyName
+          );
+          if (match) {
+            return { ...it, shouldBe: match.monthlySaving };
+          }
+          return it;
+        });
+      }
+      return clone;
+    });
+  }, [budgetData]);
 
   // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
   const monthlyTotal = monthlySections.flatMap((s) => s.items).reduce((s, i) => s + i.amount, 0);
