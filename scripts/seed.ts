@@ -130,8 +130,8 @@ const Budget = mongoose.model("Budget", BudgetSchema);
 
 async function seedDatabase() {
   try {
-    const mongoUriRoot = process.env.MONGODB_URI;
-    if (!mongoUriRoot) throw new Error("MONGODB_URI env variable is required");
+    const mongoUriRoot = process.env.MONGODB_URL;
+    if (!mongoUriRoot) throw new Error("MONGODB_URL env variable is required");
 
     // loop through each year and create separate databases
     for (const yr of yearsToSeed) {

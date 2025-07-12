@@ -15,13 +15,13 @@ You have two options:
 1. Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
 2. Create a free account and cluster
 3. Get your connection string
-4. Copy `env.example` to `.env` and update the `MONGODB_URI`
+4. Copy `env.example` to `.env` and update the `MONGODB_URL`
 
 ### Option B: Local MongoDB
 
 1. Install MongoDB locally
 2. Start MongoDB service
-3. Use: `MONGODB_URI=mongodb://localhost:27017/budget`
+3. Use: `MONGODB_URL=mongodb://localhost:27017/budget`
 
 ## 3. Create .env file
 

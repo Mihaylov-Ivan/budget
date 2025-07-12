@@ -1,11 +1,11 @@
 // Helper functions and actions to interact with MongoDB
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
+const MONGODB_URL = process.env.MONGODB_URL as string;
 
-if (!MONGODB_URI) {
+if (!MONGODB_URL) {
   throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env"
+    "Please define the MONGODB_URL environment variable inside .env"
   );
 }
 
@@ -26,7 +26,7 @@ async function dbConnect() {
 
   if (!cached.promise) {
     // Explicitly connect to the "budget_2025" database so we always read from the correct DB
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    cached.promise = mongoose.connect(MONGODB_URL, {
       dbName: "budget_2025",
     });
   }
