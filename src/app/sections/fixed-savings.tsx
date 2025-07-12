@@ -4,14 +4,25 @@ import React, { useState } from "react";
 import Add from "../components/add";
 import FixedSaving from "../components/fixed-saving";
 import Edit from "../components/edit";
-import { fixedSavings as initialFixedSavings } from "../data";
+import type { FixedSavings as FixedSavingType } from "../data";
 
-export default function FixedSavings() {
+interface Props {
+  data: FixedSavingType[];
+}
+
+export default function FixedSavings({ data }: Props) {
   const [editing, setEditing] = useState(false);
-  const [savings, setSavings] = useState(initialFixedSavings);
+  const [savings, setSavings] = useState(data);
 
   const handleToggleEdit = () => {
-    // TODO: Persist to DB when saving
+    if (editing) {
+      // Persist to DB when leaving edit mode
+      fetch('/api/budget/fixed-savings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fixedSavings: savings }),
+      }).catch(console.error);
+    }
     setEditing((prev) => !prev);
   };
 

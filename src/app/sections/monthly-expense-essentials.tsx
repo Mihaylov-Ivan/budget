@@ -1,14 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
-import { monthlyBudget as initialBudget } from "../data";
-import BudgetItem from "../components/budget-item";
+import { useState } from "react";
 import Add from "../components/add";
-import EditBtn from "../components/edit";
+import BudgetItem from "../components/budget-item";
 import DeleteBtn from "../components/delete";
+import EditBtn from "../components/edit";
 
 type Item = { name: string; amount: number; shouldBe?: number };
 type Section = { id: string; items: Item[] };
+
+interface Props {
+  essentials: {
+    monthly: Section[];
+    weekly: Item[];
+  };
+  month: string;
+}
 
 function SectionBlock({ title = "", items }: { title?: string; items: Item[] }) {
   return (
@@ -23,48 +30,40 @@ function SectionBlock({ title = "", items }: { title?: string; items: Item[] }) 
   );
 }
 
-export default function MonthlyExpenseEssentials() {
+export default function MonthlyExpenseEssentials({ essentials, month }: Props) {
   const [editing, setEditing] = useState(false);
-  const [monthlySections, setMonthlySections] = useState<Section[]>(
-    initialBudget.essentials.monthly as unknown as Section[]
-  );
-  const [weekly, setWeekly] = useState<Item[]>(initialBudget.essentials.weekly as Item[]);
+  const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(essentials.monthly)));
+  const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(essentials.weekly)));
 
-  const total = [
-    ...monthlySections.flatMap((sec) => sec.items),
-    ...weekly,
-  ].reduce((s, i) => s + i.amount, 0);
+  // Calculate total every render
+  const total = [...monthlySections.flatMap(s => s.items), ...weekly].reduce((s, i) => s + i.amount, 0);
 
-  const toggleEditing = () => setEditing((p) => !p);
+  const saveChanges = () => {
+    const payload = { monthly: monthlySections, weekly };
+    fetch('/api/budget/monthly-budgets', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field: 'essentials', selectedMonth: month, data: payload })
+    }).catch(console.error);
+  };
 
-  const handleFieldChange = (
-    arrSetter: React.Dispatch<React.SetStateAction<typeof weekly>>, // weekly setter
-    index: number,
-    field: "name" | "amount",
-    value: string
-  ) => {
-    arrSetter((prev) => {
-      const copy = [...prev];
-      copy[index] = {
-        ...copy[index],
-        [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value),
-      };
-      return copy;
+  const toggleEditing = () => {
+    if (editing) saveChanges();
+    setEditing(prev => !prev);
+  };
+
+  // Simple setter helpers
+  const updateMonthlyItem = (secIdx: number, itemIdx: number, field: keyof Item, val: string) => {
+    setMonthlySections(prev => {
+      const clone = JSON.parse(JSON.stringify(prev));
+      const numeric = field === 'name' ? val : val === '' ? 0 : parseFloat(val);
+      clone[secIdx].items[itemIdx][field] = numeric as any;
+      return clone;
     });
   };
 
-  const handleMonthlyItemChange = (
-    secIdx: number,
-    itemIdx: number,
-    field: "name" | "amount" | "shouldBe",
-    value: string
-  ) => {
-    setMonthlySections((prev) => {
-      const copy = [...prev];
-      const item = { ...copy[secIdx].items[itemIdx], [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value) };
-      copy[secIdx].items[itemIdx] = item;
-      return copy;
-    });
+  const updateWeeklyItem = (idx: number, field: keyof Item, val: string) => {
+    setWeekly(prev => prev.map((it, i) => i === idx ? { ...it, [field]: field === 'name' ? val : val === '' ? 0 : parseFloat(val) } : it));
   };
 
   const renderEditRows = (
@@ -184,7 +183,7 @@ export default function MonthlyExpenseEssentials() {
                   {sec.id === 'savings'
                     ? renderSavingsEditRows(
                       sec.items,
-                      (idx, field, val) => handleMonthlyItemChange(sIdx, idx, field, val),
+                      (idx, field, val) => updateMonthlyItem(sIdx, idx, field, val),
                       (idx) =>
                         setMonthlySections((prev) => {
                           const copy = [...prev];
@@ -194,7 +193,7 @@ export default function MonthlyExpenseEssentials() {
                     )
                     : renderEditRows(
                       sec.items,
-                      (idx, field, val) => handleMonthlyItemChange(sIdx, idx, field, val),
+                      (idx, field, val) => updateMonthlyItem(sIdx, idx, field, val),
                       (idx) =>
                         setMonthlySections((prev) => {
                           const copy = [...prev];
@@ -209,7 +208,7 @@ export default function MonthlyExpenseEssentials() {
             <h4 className="text-lg font-medium text-[var(--gray)]">Weekly</h4>
             {renderEditRows(
               weekly,
-              (idx, field, val) => handleFieldChange(setWeekly, idx, field, val),
+              (idx, field, val) => updateWeeklyItem(idx, field, val),
               (idx) => setWeekly((prev) => prev.filter((_, i) => i !== idx))
             )}
           </>

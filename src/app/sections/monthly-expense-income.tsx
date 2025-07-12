@@ -1,20 +1,35 @@
 "use client";
 
 import React, { useState } from "react";
-import { monthlyBudget as initialBudget } from "../data";
 import BudgetItem from "../components/budget-item";
 import Add from "../components/add";
 import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
 
-export default function MonthlyExpenseIncome() {
-  const [editing, setEditing] = useState(false);
-  const [income, setIncome] = useState(initialBudget.income);
+interface Item { name: string; amount: number; }
 
-  const total = income.reduce((sum, item) => sum + item.amount, 0);
+interface Props {
+  income: Item[];
+  month: string;
+}
+
+export default function MonthlyExpenseIncome({ income: initialIncome, month }: Props) {
+  const [editing, setEditing] = useState(false);
+  const [income, setIncome] = useState(JSON.parse(JSON.stringify(initialIncome)));
+
+  // helper to persist whole income array
+  const saveChanges = () => {
+    fetch('/api/budget/monthly-budgets', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field: 'income', selectedMonth: month, data: income })
+    }).catch(console.error);
+  };
+
+  const total = income.reduce((sum: number, item: Item) => sum + item.amount, 0);
 
   const handleFieldChange = (index: number, field: "name" | "amount", value: string) => {
-    setIncome((prev) => {
+    setIncome((prev: Item[]) => {
       const copy = [...prev];
       copy[index] = {
         ...copy[index],
@@ -24,7 +39,10 @@ export default function MonthlyExpenseIncome() {
     });
   };
 
-  const toggleEditing = () => setEditing((p) => !p);
+  const toggleEditing = () => {
+    if (editing) saveChanges();
+    setEditing((p) => !p);
+  };
 
   return (
     <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">
@@ -43,7 +61,7 @@ export default function MonthlyExpenseIncome() {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           {editing
-            ? income.map((inc, idx) => (
+            ? income.map((inc: Item, idx: number) => (
               <div key={idx} className="flex gap-2 items-center">
                 <input
                   type="text"
@@ -58,10 +76,10 @@ export default function MonthlyExpenseIncome() {
                   onChange={(e) => handleFieldChange(idx, "amount", e.target.value)}
                   className="w-28 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
                 />
-                <DeleteBtn onClick={() => setIncome((prev) => prev.filter((_, i) => i !== idx))} />
+                <DeleteBtn onClick={() => setIncome((prev: Item[]) => prev.filter((_, i) => i !== idx))} />
               </div>
             ))
-            : income.map((inc) => (
+            : income.map((inc: Item) => (
               <BudgetItem key={inc.name} name={inc.name} amount={inc.amount} color="green" />
             ))}
         </div>

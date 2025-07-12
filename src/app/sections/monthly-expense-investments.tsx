@@ -1,22 +1,41 @@
 "use client";
 
 import React, { useState } from "react";
-import { monthlyBudget as initialBudget } from "../data";
 import BudgetItem from "../components/budget-item";
 import Add from "../components/add";
 import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
 
-export default function MonthlyExpenseInvestments() {
+interface Item { name: string; amount: number; }
+interface Props {
+  investments: {
+    monthly: Item[];
+  };
+  month: string;
+}
+
+export default function MonthlyExpenseInvestments({ investments, month }: Props) {
   const [editing, setEditing] = useState(false);
-  const [items, setItems] = useState(initialBudget.investments.monthly);
+  const [items, setItems] = useState<Item[]>(JSON.parse(JSON.stringify(investments.monthly)));
 
-  const total = items.reduce((sum, i) => sum + i.amount, 0);
+  const total = items.reduce((sum: number, i: Item) => sum + i.amount, 0);
 
-  const toggleEditing = () => setEditing((p) => !p);
+  const saveChanges = () => {
+    const payload = { monthly: items };
+    fetch('/api/budget/monthly-budgets', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field: 'investments', selectedMonth: month, data: payload })
+    }).catch(console.error);
+  };
+
+  const toggleEditing = () => {
+    if (editing) saveChanges();
+    setEditing(p => !p);
+  };
 
   const handleFieldChange = (idx: number, field: "name" | "amount", value: string) => {
-    setItems((prev) => {
+    setItems((prev: Item[]) => {
       const copy = [...prev];
       copy[idx] = {
         ...copy[idx],
@@ -42,7 +61,7 @@ export default function MonthlyExpenseInvestments() {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           {editing
-            ? items.map((inv, idx) => (
+            ? items.map((inv: Item, idx: number) => (
               <div key={idx} className="flex gap-2 items-center">
                 <input
                   type="text"
@@ -57,10 +76,10 @@ export default function MonthlyExpenseInvestments() {
                   onChange={(e) => handleFieldChange(idx, "amount", e.target.value)}
                   className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
                 />
-                <DeleteBtn onClick={() => setItems((prev) => prev.filter((_, i) => i !== idx))} />
+                <DeleteBtn onClick={() => setItems((prev: Item[]) => prev.filter((_, i) => i !== idx))} />
               </div>
             ))
-            : items.map((inv) => (
+            : items.map((inv: Item) => (
               <BudgetItem key={inv.name} name={inv.name} amount={inv.amount} color="green" />
             ))}
         </div>

@@ -5,13 +5,26 @@ import Add from "../components/add";
 import Button from "../components/button";
 import EditBtn from "../components/edit";
 import YearlyExpense from "../components/yearly-expense";
-import { yearlyExpenses as initialExpenses } from "../data";
+import type { YearlyExpenses as YearlyExpenseType } from "../data";
 
-export default function YearlyExpenses() {
+interface Props {
+  data: YearlyExpenseType[];
+}
+
+export default function YearlyExpenses({ data }: Props) {
   const [editing, setEditing] = useState(false);
-  const [expenses, setExpenses] = useState(initialExpenses);
+  const [expenses, setExpenses] = useState(data);
 
-  const toggleEditing = () => setEditing((p) => !p);
+  const toggleEditing = () => {
+    if (editing) {
+      fetch('/api/budget/yearly-expenses', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ yearlyExpenses: expenses }),
+      }).catch(console.error);
+    }
+    setEditing((p) => !p);
+  };
 
   const handleFieldChange = (
     index: number,

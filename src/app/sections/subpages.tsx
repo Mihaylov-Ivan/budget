@@ -6,8 +6,16 @@ import FixedSavings from "./fixed-savings";
 import YearlyExpenses from "./yearly-expenses";
 import MonthlyBudget from "./monthly-budget";
 import Overview from "./overview";
+import type { FixedSavings as FixedSavingType, YearlyExpenses as YearlyExpenseType } from "../data";
 
-export default function Subpages() {
+interface Props {
+  fixedSavings: FixedSavingType[];
+  yearlyExpenses: YearlyExpenseType[];
+  monthlyBudget: any;
+  month: string;
+}
+
+export default function Subpages({ fixedSavings, yearlyExpenses, monthlyBudget, month }: Props) {
   const [active, setActive] = useState<SubpageKey>("Fixed Savings");
 
   return (
@@ -16,10 +24,10 @@ export default function Subpages() {
       <SubpageSelector value={active} onChange={setActive} />
 
       {/* Content */}
-      {active === "Fixed Savings" && <FixedSavings />}
-      {active === "Yearly Expenses" && <YearlyExpenses />}
-      {active === "Monthly Budget" && <MonthlyBudget />}
-      {active === "Overview" && <Overview />}
+      {active === "Fixed Savings" && <FixedSavings data={fixedSavings} />}
+      {active === "Yearly Expenses" && <YearlyExpenses data={yearlyExpenses} />}
+      {active === "Monthly Budget" && <MonthlyBudget key={month} budget={monthlyBudget} month={month} />}
+      {active === "Overview" && <Overview savings={fixedSavings} budget={monthlyBudget} />}
     </section>
   );
 } 

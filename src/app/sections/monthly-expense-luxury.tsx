@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { monthlyBudget as initialBudget } from "../data";
 import BudgetItem from "../components/budget-item";
 import Add from "../components/add";
 import EditBtn from "../components/edit";
@@ -32,19 +31,37 @@ function Block({ title = "", items }: { title?: string; items: { name: string; a
 type Item = { name: string; amount: number; shouldBe?: number };
 type Section = { id: string; items: Item[] };
 
-export default function MonthlyExpenseLuxury() {
+interface Props {
+  luxury: {
+    monthly: Section[];
+    weekly: Item[];
+  };
+  month: string;
+}
+
+export default function MonthlyExpenseLuxury({ luxury, month }: Props) {
   const [editing, setEditing] = useState(false);
-  const [monthlySections, setMonthlySections] = useState<Section[]>(
-    initialBudget.luxury.monthly as unknown as Section[]
-  );
-  const [weekly, setWeekly] = useState<Item[]>(initialBudget.luxury.weekly as Item[]);
+  const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(luxury.monthly)));
+  const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(luxury.weekly)));
 
   const total = [...monthlySections.flatMap((s) => s.items), ...weekly].reduce(
     (s, i) => s + i.amount,
     0
   );
 
-  const toggleEditing = () => setEditing((p) => !p);
+  const saveChanges = () => {
+    const payload = { monthly: monthlySections, weekly };
+    fetch('/api/budget/monthly-budgets', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field: 'luxury', selectedMonth: month, data: payload })
+    }).catch(console.error);
+  };
+
+  const toggleEditing = () => {
+    if (editing) saveChanges();
+    setEditing((p) => !p);
+  };
 
   const handleMonthlyItemChange = (
     secIdx: number,
