@@ -8,7 +8,7 @@ interface Props {
 }
 
 function sum(items: { amount: number }[]) {
-  return items.reduce((s, i) => s + i.amount, 0);
+  return items.reduce((s: number, i: { amount: number }) => s + i.amount, 0);
 }
 
 export default function Overview({ savings, budget }: Props) {
@@ -27,7 +27,7 @@ export default function Overview({ savings, budget }: Props) {
   ].reduce((s, i) => s + i.amount, 0);
   const totalExpenses = totalEssentials + totalLuxury;
 
-  const totalInvestments = budget.investments.monthly.reduce((s, i) => s + i.amount, 0);
+  const totalInvestments = budget.investments.monthly.reduce((s: number, i: { amount: number }) => s + i.amount, 0);
 
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
