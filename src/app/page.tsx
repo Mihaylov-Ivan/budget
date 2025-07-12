@@ -29,7 +29,10 @@ export type BudgetData = {
 export default function Home() {
   const [budgetData, setBudgetData] = useState<BudgetData | null>(null);
   // Selected month handling
-  const defaultMonth = months[new Date().getMonth()] ?? months[0];
+  const currentMonthIndex = new Date().getMonth(); // 0-11 (Jan = 0, Dec = 11)
+  // Map current month to June-starting array: Jan=7, Feb=8, ..., May=11, Jun=0, Jul=1, ..., Dec=5
+  const mappedIndex = currentMonthIndex >= 5 ? currentMonthIndex - 5 : currentMonthIndex + 7;
+  const defaultMonth = months[mappedIndex] ?? months[0];
   const [selectedMonth, setSelectedMonth] = useState<string>(defaultMonth);
 
   useEffect(() => {
@@ -45,8 +48,13 @@ export default function Home() {
 
   if (!budgetData) {
     return (
-      <div className="min-h-screen p-4 sm:p-8 bg-[var(--background)] text-[var(--foreground)] font-sans flex flex-col gap-6">
-        <p>Loading...</p>
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans flex items-center justify-center">
+        <div className="relative">
+          {/* Outer ring */}
+          <div className="w-12 h-12 border-4 border-gray-200 rounded-full"></div>
+          {/* Spinning inner ring */}
+          <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
       </div>
     );
   }
