@@ -1,11 +1,50 @@
 "use client";
 
-import React from "react";
-import { yearlyExpenses } from "../data";
+import { useState } from "react";
 import Add from "../components/add";
-import YearlyExpenseRow from "../components/yearly-expense";
+import Button from "../components/button";
+import EditBtn from "../components/edit";
+import YearlyExpense from "../components/yearly-expense";
+import type { YearlyExpenses as YearlyExpenseType } from "../data";
 
-export default function YearlyExpenses() {
+interface Props {
+  data: YearlyExpenseType[];
+}
+
+export default function YearlyExpenses({ data }: Props) {
+  const [editing, setEditing] = useState(false);
+  const [expenses, setExpenses] = useState(data);
+
+  const toggleEditing = () => {
+    if (editing) {
+      fetch('/api/budget/yearly-expenses', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ yearlyExpenses: expenses }),
+      }).catch(console.error);
+    }
+    setEditing((p) => !p);
+  };
+
+  const handleFieldChange = (
+    index: number,
+    field: keyof typeof expenses[number],
+    value: string
+  ) => {
+    setExpenses((prev) => {
+      const copy = [...prev];
+      //@ts-ignore
+      copy[index] = {
+        ...copy[index],
+        [field]:
+          field === "name" || field === "totalShouldBe" || field === "startMonth"
+            ? value
+            : value === "" ? 0 : parseFloat(value),
+      };
+      return copy;
+    });
+  };
+
   return (
     <section className="border border-[var(--surface-3)] rounded-lg p-6 sm:p-8 flex flex-col gap-4 bg-[var(--surface-1)]">
       {/* Header */}
@@ -13,16 +52,22 @@ export default function YearlyExpenses() {
         <h2 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
           Yearly Expense Savings
         </h2>
-        <Add label="Add Yearly Expense" />
+        <div className="flex gap-2">
+          <Add label="Add Yearly Expense" />
+          <EditBtn onClick={toggleEditing} />
+        </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-[var(--surface-3)] text-left">
-          <thead className="bg-[var(--surface-2)]border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
-            <tr>
+          <thead>
+            <tr className="bg-[var(--surface-2)]">
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
                 Expense
+              </th>
+              <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
+                Start Month
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
                 Total
@@ -37,20 +82,122 @@ export default function YearlyExpenses() {
                 Saved
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
+                Missed
+              </th>
+              <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
                 Used
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
                 Available
               </th>
-              <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
-                Actions
-              </th>
+              {editing && (
+                <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-[var(--surface-1)]">
-            {yearlyExpenses.map((expense) => (
-              <YearlyExpenseRow key={expense.name} {...expense} />
-            ))}
+            {editing
+              ? expenses.map((exp, idx) => (
+                <tr key={exp.name} className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="text"
+                      value={exp.name}
+                      onChange={(e) => handleFieldChange(idx, "name", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="text"
+                      value={exp.startMonth}
+                      onChange={(e) => handleFieldChange(idx, "startMonth", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={exp.total}
+                      onChange={(e) => handleFieldChange(idx, "total", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="text"
+                      value={exp.totalShouldBe}
+                      onChange={(e) => handleFieldChange(idx, "totalShouldBe", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={exp.monthlySaving}
+                      onChange={(e) => handleFieldChange(idx, "monthlySaving", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={exp.saved}
+                      onChange={(e) => handleFieldChange(idx, "saved", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={exp.missed}
+                      onChange={(e) => handleFieldChange(idx, "missed", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={exp.used}
+                      onChange={(e) => handleFieldChange(idx, "used", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={exp.available}
+                      onChange={(e) => handleFieldChange(idx, "available", e.target.value)}
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2">
+                    <Button
+                      label="Saved"
+                      onClick={() => { /* TODO: implement saved action */ }}
+                    />
+                    <Button
+                      label="Missed"
+                      onClick={() => { /* TODO: implement missed action */ }}
+                    />
+                    <Button
+                      label="Delete"
+                      onClick={() => setExpenses((prev) => prev.filter((_, i) => i !== idx))}
+                    />
+                  </td>
+                </tr>
+              ))
+              : expenses.map((e) => (
+                <YearlyExpense key={e.name} {...e} editing={false} />
+              ))}
           </tbody>
         </table>
       </div>

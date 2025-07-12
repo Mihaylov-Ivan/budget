@@ -1,18 +1,24 @@
 import React from "react";
-import { YearlyExpense } from "../data";
-import Edit from "./edit";
+import { YearlyExpenses } from "../data";
 import Delete from "./delete";
+import Button from "./button";
 
-export default function YearlyExpenseRow({
+interface YearlyExpenseProps extends YearlyExpenses {
+  editing: boolean;
+}
+
+export default function YearlyExpense({
   name,
+  startMonth,
   total,
   totalShouldBe,
   monthlySaving,
   saved,
-  missed, // not displayed but preserved for future
+  missed,
   used,
   available,
-}: YearlyExpense) {
+  editing,
+}: YearlyExpenseProps) {
   const currency = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -27,6 +33,9 @@ export default function YearlyExpenseRow({
         {name}
       </td>
       <td className="py-4 px-3 whitespace-nowrap text-sm">
+        {startMonth}
+      </td>
+      <td className="py-4 px-3 whitespace-nowrap text-sm">
         {formatNum(total)}
       </td>
       <td className="py-4 px-3 whitespace-nowrap text-sm">
@@ -39,15 +48,21 @@ export default function YearlyExpenseRow({
         {formatNum(saved)}
       </td>
       <td className="py-4 px-3 whitespace-nowrap text-sm">
+        {formatNum(missed)}
+      </td>
+      <td className="py-4 px-3 whitespace-nowrap text-sm">
         {formatNum(used)}
       </td>
       <td className="py-4 px-3 whitespace-nowrap text-sm">
         {formatNum(available)}
       </td>
-      <td className="py-4 px-3 whitespace-nowrap text-sm flex gap-2">
-        <Edit />
-        <Delete />
-      </td>
+      {editing && (
+        <td className="py-4 px-3 whitespace-nowrap text-sm flex gap-2">
+          <Button label="Saved" />
+          <Button label="Missed" />
+          <Delete />
+        </td>
+      )}
     </tr>
   );
 } 

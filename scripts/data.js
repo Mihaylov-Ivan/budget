@@ -1,64 +1,13 @@
 // Yearly money distribution -------------------------------------------------
-export const yearlyDistribution = {
+const yearlyDistribution = {
   receivedIncome: 7870.45,
   shouldHave: 16471.97,
   actuallyHave: 16471.97,
   extra: 0.0,
 };
 
-// Helper types --------------------------------------------------------------
-export type YearlyCardColor = "blue" | "orange" | "green" | "purple";
-
-export type YearlyCardData = {
-  id: string;
-  title: string;
-  value: number;
-  description: string;
-  color: YearlyCardColor;
-};
-
-// Map the distribution object into the card data expected by the UI
-export const yearlyCards: YearlyCardData[] = [
-  {
-    id: "received",
-    title: "Received Income",
-    value: yearlyDistribution.receivedIncome,
-    description: "Total received income to date",
-    color: "blue",
-  },
-  {
-    id: "should-have",
-    title: "Should Have",
-    value: yearlyDistribution.shouldHave,
-    description: "Fixed savings + expense savings + current month budget",
-    color: "orange",
-  },
-  {
-    id: "actually-have",
-    title: "Actually Have",
-    value: yearlyDistribution.actuallyHave,
-    description: "Cash + accounts + investments + debt",
-    color: "green",
-  },
-  {
-    id: "extra",
-    title: "Extra",
-    value: yearlyDistribution.extra,
-    description: "Difference between should have and actually have",
-    color: "purple",
-  },
-];
-
 // Fixed savings -------------------------------------------------------------
-export type FixedSavings = {
-  name: string;
-  total: number | "Unlimited";
-  saved: number;
-  used: number;
-  available: number;
-};
-
-export const fixedSavings: FixedSavings[] = [
+const fixedSavings = [
   { name: "Emergency", total: 1000, saved: 0, used: 0, available: 0 },
   {
     name: "6 Months Living Support",
@@ -107,19 +56,7 @@ export const fixedSavings: FixedSavings[] = [
 ];
 
 // Yearly expenses -----------------------------------------------------------
-export type YearlyExpenses = {
-  name: string;
-  startMonth: (typeof months)[number];
-  total: number;
-  totalShouldBe: string;
-  monthlySaving: number;
-  saved: number;
-  missed: number;
-  used: number;
-  available: number;
-};
-
-export const yearlyExpenses: YearlyExpenses[] = [
+const yearlyExpenses = [
   {
     name: "Summer Holiday",
     startMonth: "August",
@@ -178,7 +115,7 @@ export const yearlyExpenses: YearlyExpenses[] = [
 ];
 
 // Monthly budget -----------------------------------------------------------
-export const monthlyBudget = {
+const monthlyBudget = {
   income: [{ name: "Hydrogenera", amount: 3000 }],
   essentials: {
     monthly: [
@@ -228,7 +165,10 @@ export const monthlyBudget = {
         id: "savings",
         items: [
           { name: "Fixed Expenses Savings (20%+)", amount: 6324.34 },
-          { name: "Mortgage Deposit Fixed Expenses Savings (10%)", amount: 0 },
+          {
+            name: "Mortgage Deposit Fixed Expenses Savings (10%)",
+            amount: 0,
+          },
           { name: "Summer Holiday Savings", amount: 0 },
           { name: "Winter Holiday Savings", amount: 0 },
           { name: "Travelling Savings", amount: 0 },
@@ -260,18 +200,9 @@ export const monthlyBudget = {
   },
 };
 
-// Months list --------------------------------------------------------------
-export const months = [
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-] as const;
+module.exports = {
+  yearlyDistribution,
+  fixedSavings,
+  yearlyExpenses,
+  monthlyBudget,
+};

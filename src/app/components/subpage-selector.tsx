@@ -21,12 +21,13 @@ export default function SubpageSelector({ value, onChange }: SubpageSelectorProp
   return (
     <div className="w-full flex flex-col sm:flex-row gap-2 bg-[var(--surface-1)] p-2 rounded-lg overflow-x-auto">
       {pages.map((page) => (
-        <SubpageSelectorBtn
-          key={page}
-          label={page}
-          active={value === page}
-          onClick={() => onChange(page)}
-        />
+        <div className="flex-1" key={page}>
+          <SubpageSelectorBtn
+            label={page}
+            active={value === page}
+            onClick={() => onChange(page)}
+          />
+        </div>
       ))}
     </div>
   );
