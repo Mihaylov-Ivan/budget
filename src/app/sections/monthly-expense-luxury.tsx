@@ -45,8 +45,7 @@ export default function MonthlyExpenseLuxury({ luxury, month }: Props) {
   const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(luxury.weekly)));
 
   const total = [...monthlySections.flatMap((s) => s.items), ...weekly].reduce(
-    (s, i) => s + i.amount,
-    0
+    (s, i) => s + i.amount, 0
   );
 
   const saveChanges = () => {
