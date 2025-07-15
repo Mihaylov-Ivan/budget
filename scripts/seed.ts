@@ -63,6 +63,7 @@ const BudgetSchema = new mongoose.Schema(
       {
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
         name: String,
+        startMonth: String,
         total: Number,
         totalShouldBe: String,
         monthlySaving: Number,
@@ -84,8 +85,14 @@ const BudgetSchema = new mongoose.Schema(
         monthly: [
           {
             _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-            name: String,
-            amount: Number,
+            id: String,
+            items: [
+              {
+                _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+                name: String,
+                amount: Number,
+              },
+            ],
           },
         ],
         weekly: [
@@ -97,11 +104,19 @@ const BudgetSchema = new mongoose.Schema(
         ],
       },
       luxury: {
+        percentage: Number,
         monthly: [
           {
             _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-            name: String,
-            amount: Number,
+            id: String,
+            items: [
+              {
+                _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+                name: String,
+                amount: Number,
+                shouldBe: Number,
+              },
+            ],
           },
         ],
         weekly: [
@@ -113,11 +128,13 @@ const BudgetSchema = new mongoose.Schema(
         ],
       },
       investments: {
+        percentage: Number,
         monthly: [
           {
             _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
             name: String,
             amount: Number,
+            percentage: Number,
           },
         ],
       },
@@ -125,8 +142,6 @@ const BudgetSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-const Budget = mongoose.model("Budget", BudgetSchema);
 
 async function seedDatabase() {
   try {

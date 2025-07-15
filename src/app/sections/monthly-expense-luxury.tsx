@@ -35,6 +35,7 @@ type Section = { id: string; items: Item[] };
 
 interface Props {
   luxury: {
+    percentage?: number;
     monthly: Section[];
     weekly: Item[];
   };
@@ -47,7 +48,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const [editing, setEditing] = useState(false);
   const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(luxury.monthly)));
   const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(luxury.weekly)));
-  const [percentage, setPercentage] = useState(20); // Default 20%
+  const [percentage, setPercentage] = useState(luxury.percentage ?? 80); // Use percentage from data if provided
   const { availableMoney, essentialsTotal } = useAmounts();
 
   // --- Helper to map a savings item name to a yearly expense name ---
@@ -92,7 +93,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const unassigned = availableForLuxury - total;
 
   const saveChanges = () => {
-    const payload = { monthly: monthlySections, weekly };
+    const payload = { percentage, monthly: monthlySections, weekly };
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

@@ -6,12 +6,13 @@ import Add from "../components/add";
 import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
 import { useAmounts } from "../store/useAmounts";
+import { months } from "../data";
 
 interface Item { name: string; amount: number; }
 
 interface Props {
   income: Item[];
-  month: string;
+  month: (typeof months)[number];
   budgetData?: any; // Add budgetData to access previous month's income
 }
 
@@ -19,6 +20,7 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
   const [editing, setEditing] = useState(false);
   const [income, setIncome] = useState(JSON.parse(JSON.stringify(initialIncome)));
   const { setAvailableMoney } = useAmounts();
+  const [manualAvailableMoney, setManualAvailableMoney] = useState<number | null>(null);
 
   // helper to persist whole income array
   const saveChanges = () => {
@@ -31,14 +33,14 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
 
   const total = income.reduce((sum: number, item: Item) => sum + item.amount, 0);
 
+  const isFirstMonth = month === months[0];
+
   // Calculate available money from previous month's income + next month savings
   const getPreviousMonthIncome = () => {
+    if (isFirstMonth && manualAvailableMoney !== null) {
+      return manualAvailableMoney;
+    }
     if (!budgetData?.monthlyBudgets) return 0;
-
-    const months = [
-      "June", "July", "August", "September", "October", "November", "December",
-      "January", "February", "March", "April", "May"
-    ];
 
     const currentMonthIndex = months.indexOf(month);
     const previousMonthIndex = currentMonthIndex === 0 ? months.length - 1 : currentMonthIndex - 1;
@@ -124,7 +126,32 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
             ))}
         </div>
         <BudgetItem name="Total Income" amount={total} color="green" highlight />
-        <BudgetItem name="Available Money" amount={availableMoney} color="green" highlight />
+        <div>
+          {isFirstMonth ? (
+            editing ? (
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={"Available Money"}
+                  disabled
+                  className="flex-1 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 font-semibold"
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={manualAvailableMoney !== null ? manualAvailableMoney : ""}
+                  onChange={e => setManualAvailableMoney(e.target.value === "" ? null : parseFloat(e.target.value))}
+                  className="w-28 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
+                  placeholder="Enter available money"
+                />
+              </div>
+            ) : (
+              <BudgetItem name="Available Money" amount={availableMoney} color="green" highlight />
+            )
+          ) : (
+            <BudgetItem name="Available Money" amount={availableMoney} color="green" highlight />
+          )}
+        </div>
       </div>
     </div>
   );

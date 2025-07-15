@@ -7,9 +7,11 @@ import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
 import { useAmounts } from "../store/useAmounts";
 
-interface Item { name: string; amount: number; }
+// Added `percentage` optional field for per-item allocation percentage
+interface Item { name: string; amount: number; percentage?: number; }
 interface Props {
   investments: {
+    percentage?: number;
     monthly: Item[];
   };
   month: string;
@@ -18,8 +20,11 @@ interface Props {
 
 export default function MonthlyExpenseInvestments({ investments, month, daysInMonth }: Props) {
   const [editing, setEditing] = useState(false);
-  const [items, setItems] = useState<Item[]>(JSON.parse(JSON.stringify(investments.monthly)));
-  const [percentage, setPercentage] = useState(100); // Default 100%
+  // Ensure each item has a percentage (default 0 if absent)
+  const [items, setItems] = useState<Item[]>(
+    JSON.parse(JSON.stringify(investments.monthly)).map((it: Item) => ({ ...it, percentage: it.percentage ?? 0 }))
+  );
+  const [percentage, setPercentage] = useState(investments.percentage ?? 20);
   const { availableMoney, essentialsTotal } = useAmounts();
 
   // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
@@ -34,7 +39,7 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
   const unassigned = availableForInvestments - total;
 
   const saveChanges = () => {
-    const payload = { monthly: items };
+    const payload = { percentage, monthly: items };
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -47,7 +52,11 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
     setEditing(p => !p);
   };
 
-  const handleFieldChange = (idx: number, field: "name" | "amount", value: string) => {
+  const handleFieldChange = (
+    idx: number,
+    field: "name" | "amount" | "percentage",
+    value: string
+  ) => {
     setItems((prev: Item[]) => {
       const copy = [...prev];
       copy[idx] = {
@@ -89,29 +98,74 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
         <BudgetItem name="Available" amount={availableForInvestments} color="green" highlight />
         <BudgetItem name="Unassigned" amount={unassigned} color="green" warning={unassigned < 0} highlight />
         <BudgetItem name="Total Investments" amount={total} color="green" highlight />
+
+        {/* Investments list */}
         <div className="flex flex-col gap-2">
-          {editing
-            ? items.map((inv: Item, idx: number) => (
-              <div key={idx} className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  value={inv.name}
-                  onChange={(e) => handleFieldChange(idx, "name", e.target.value)}
-                  className="flex-1 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
-                />
-                <input
-                  type="number"
-                  step="0.01"
-                  value={inv.amount}
-                  onChange={(e) => handleFieldChange(idx, "amount", e.target.value)}
-                  className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
-                />
-                <DeleteBtn onClick={() => setItems((prev: Item[]) => prev.filter((_, i) => i !== idx))} />
+          {editing ? (
+            <>
+              {/* Header row (edit) */}
+              <div className="px-4 flex items-center text-sm font-medium text-[var(--gray)] mb-1">
+                <span className="flex-1">Name</span>
+                <span className="w-20 text-right">Amount</span>
+                <span className="w-20 text-right">Should be</span>
+                <span className="w-20 text-right">%</span>
+                <span className="w-8" />
               </div>
-            ))
-            : items.map((inv: Item) => (
-              <BudgetItem key={inv.name} name={inv.name} amount={inv.amount} color="green" />
-            ))}
+              {items.map((inv: Item, idx: number) => {
+                const shouldBe = availableForInvestments * ((inv.percentage ?? 0) / 100);
+                return (
+                  <div key={idx} className="flex gap-2 items-center w-full">
+                    <input
+                      type="text"
+                      value={inv.name}
+                      onChange={(e) => handleFieldChange(idx, "name", e.target.value)}
+                      className="flex-1 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                    />
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={inv.amount}
+                      onChange={(e) => handleFieldChange(idx, "amount", e.target.value)}
+                      className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
+                    />
+                    <span className="w-20 text-right">{shouldBe.toFixed(2)}</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={inv.percentage ?? 0}
+                      onChange={(e) => handleFieldChange(idx, "percentage", e.target.value)}
+                      className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
+                    />
+                    <DeleteBtn onClick={() => setItems((prev: Item[]) => prev.filter((_, i) => i !== idx))} />
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <>
+              {/* Header row (view) */}
+              <div className="px-4 flex items-center text-sm font-medium text-[var(--gray)] mb-1">
+                <span className="flex-1">Name</span>
+                <span className="w-20 text-right">Amount</span>
+                <span className="w-20 text-right">Should be</span>
+                <span className="w-20 text-right">%</span>
+              </div>
+              {items.map((inv: Item) => {
+                const shouldBe = availableForInvestments * ((inv.percentage ?? 0) / 100);
+                return (
+                  <div
+                    key={inv.name}
+                    className="bg-[var(--surface-2)] text-[var(--green)] rounded-lg px-4 py-2 flex items-center"
+                  >
+                    <span className="flex-1">{inv.name}</span>
+                    <span className="w-20 text-right">{inv.amount.toFixed(2)}</span>
+                    <span className="w-20 text-right">{shouldBe.toFixed(2)}</span>
+                    <span className="w-20 text-right">{(inv.percentage ?? 0).toFixed(2)}%</span>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
     </div >

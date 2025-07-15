@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Add from "../components/add";
 import Button from "../components/button";
 import EditBtn from "../components/edit";

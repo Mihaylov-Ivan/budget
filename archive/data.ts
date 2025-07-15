@@ -1,13 +1,64 @@
 // Yearly money distribution -------------------------------------------------
-const yearlyDistribution = {
+export const yearlyDistribution = {
   receivedIncome: 7870.45,
   shouldHave: 16471.97,
   actuallyHave: 16471.97,
   extra: 0.0,
 };
 
+// Helper types --------------------------------------------------------------
+export type YearlyCardColor = "blue" | "orange" | "green" | "purple";
+
+export type YearlyCardData = {
+  id: string;
+  title: string;
+  value: number;
+  description: string;
+  color: YearlyCardColor;
+};
+
+// Map the distribution object into the card data expected by the UI
+export const yearlyCards: YearlyCardData[] = [
+  {
+    id: "received",
+    title: "Received Income",
+    value: yearlyDistribution.receivedIncome,
+    description: "Total received income to date",
+    color: "blue",
+  },
+  {
+    id: "should-have",
+    title: "Should Have",
+    value: yearlyDistribution.shouldHave,
+    description: "Fixed savings + expense savings + current month budget",
+    color: "orange",
+  },
+  {
+    id: "actually-have",
+    title: "Actually Have",
+    value: yearlyDistribution.actuallyHave,
+    description: "Cash + accounts + investments + debt",
+    color: "green",
+  },
+  {
+    id: "extra",
+    title: "Extra",
+    value: yearlyDistribution.extra,
+    description: "Difference between should have and actually have",
+    color: "purple",
+  },
+];
+
 // Fixed savings -------------------------------------------------------------
-const fixedSavings = [
+export type FixedSavings = {
+  name: string;
+  total: number | "Unlimited";
+  saved: number;
+  used: number;
+  available: number;
+};
+
+export const fixedSavings: FixedSavings[] = [
   { name: "Emergency", total: 1000, saved: 0, used: 0, available: 0 },
   {
     name: "6 Months Living Support",
@@ -67,7 +118,19 @@ const fixedSavings = [
 ];
 
 // Yearly expenses -----------------------------------------------------------
-const yearlyExpenses = [
+export type YearlyExpenses = {
+  name: string;
+  startMonth: (typeof months)[number] | "...";
+  total: number;
+  totalShouldBe: string;
+  monthlySaving: number;
+  saved: number;
+  missed: number;
+  used: number;
+  available: number;
+};
+
+export const yearlyExpenses: YearlyExpenses[] = [
   {
     name: "Summer Holiday",
     startMonth: "August",
@@ -125,7 +188,7 @@ const yearlyExpenses = [
   },
   {
     name: "Concerts",
-    startMonth: "",
+    startMonth: "...",
     total: 0,
     totalShouldBe: "500 - 1000",
     monthlySaving: 0,
@@ -169,7 +232,7 @@ const yearlyExpenses = [
   },
   {
     name: "Car Insurance",
-    startMonth: "",
+    startMonth: "...",
     total: 0,
     totalShouldBe: "0.00",
     monthlySaving: 0,
@@ -180,7 +243,7 @@ const yearlyExpenses = [
   },
   {
     name: "Car Tax",
-    startMonth: "",
+    startMonth: "...",
     total: 0,
     totalShouldBe: "0.00",
     monthlySaving: 0,
@@ -191,7 +254,7 @@ const yearlyExpenses = [
   },
   {
     name: "Car MOT",
-    startMonth: "",
+    startMonth: "...",
     total: 0,
     totalShouldBe: "0.00",
     monthlySaving: 0,
@@ -202,7 +265,7 @@ const yearlyExpenses = [
   },
   {
     name: "Car Maintenance",
-    startMonth: "",
+    startMonth: "...",
     total: 0,
     totalShouldBe: "0.00",
     monthlySaving: 0,
@@ -213,7 +276,7 @@ const yearlyExpenses = [
   },
   {
     name: "Renovations",
-    startMonth: "",
+    startMonth: "...",
     total: 0,
     totalShouldBe: "1000.00",
     monthlySaving: 0,
@@ -247,7 +310,7 @@ const yearlyExpenses = [
 ];
 
 // Monthly budget -----------------------------------------------------------
-const monthlyBudget = {
+export const monthlyBudget = {
   income: [{ name: "Hydrogenera", amount: 3000 }],
   essentials: {
     monthly: [
@@ -282,7 +345,6 @@ const monthlyBudget = {
     weekly: [{ name: "Food", amount: 100 }],
   },
   luxury: {
-    percentage: 90,
     monthly: [
       {
         id: "expenses",
@@ -298,10 +360,7 @@ const monthlyBudget = {
         id: "savings",
         items: [
           { name: "Fixed Expenses Savings (20%+)", amount: 6324.34 },
-          {
-            name: "Mortgage Deposit Fixed Expenses Savings (10%)",
-            amount: 0,
-          },
+          { name: "Mortgage Deposit Fixed Expenses Savings (10%)", amount: 0 },
           { name: "Summer Holiday Savings", amount: 0 },
           { name: "Winter Holiday Savings", amount: 0 },
           { name: "Travelling Savings", amount: 0 },
@@ -325,11 +384,10 @@ const monthlyBudget = {
     ],
   },
   investments: {
-    percentage: 10,
     monthly: [
       { name: "S&P500", amount: 63, percentage: 45 },
       {
-        name: "Business & Real Estate Savings",
+        name: "Business & Real Estate Savings (45%)",
         amount: 62.99,
         percentage: 45,
       },
@@ -338,9 +396,18 @@ const monthlyBudget = {
   },
 };
 
-module.exports = {
-  yearlyDistribution,
-  fixedSavings,
-  yearlyExpenses,
-  monthlyBudget,
-};
+// Months list --------------------------------------------------------------
+export const months = [
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+] as const;
