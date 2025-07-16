@@ -6,6 +6,7 @@ import BudgetItem from "../components/budget-item";
 import DeleteBtn from "../components/delete";
 import EditBtn from "../components/edit";
 import { useAmounts } from "../store/useAmounts";
+import { YearlyExpenses as YearlyExpenseType } from "../data";
 
 type Item = { name: string; amount: number; shouldBe?: number };
 type Section = { id: string; items: Item[] };
@@ -17,6 +18,7 @@ interface Props {
   };
   month: string;
   daysInMonth: number;
+  budgetData?: any; // Add budgetData to access yearly expenses
 }
 
 function SectionBlock({ title = "", items }: { title?: string; items: Item[] }) {
@@ -32,11 +34,43 @@ function SectionBlock({ title = "", items }: { title?: string; items: Item[] }) 
   );
 }
 
-export default function MonthlyExpenseEssentials({ essentials, month, daysInMonth }: Props) {
+export default function MonthlyExpenseEssentials({ essentials, month, daysInMonth, budgetData }: Props) {
   const [editing, setEditing] = useState(false);
   const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(essentials.monthly)));
   const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(essentials.weekly)));
   const { setEssentialsTotal } = useAmounts();
+
+  // --- Helper to map a savings item name to a yearly expense name ---
+  const mapSavingsToYearly = (name: string) => {
+    // Remove the trailing " Savings" and anything that comes after
+    let base = name.replace(/\s*Savings.*$/i, "").trim();
+    // Remove trailing commas if any
+    base = base.replace(/,$/, "");
+    return base;
+  };
+
+  // Populate `shouldBe` for savings items based on yearly expenses monthlySaving
+  useEffect(() => {
+    if (!budgetData?.yearlyExpenses) return;
+
+    setMonthlySections((prev) => {
+      const clone: Section[] = JSON.parse(JSON.stringify(prev));
+      const savingsSection = clone.find((s) => s.id === "savings");
+      if (savingsSection) {
+        savingsSection.items = savingsSection.items.map((it) => {
+          const yearlyName = mapSavingsToYearly(it.name);
+          const match: YearlyExpenseType | undefined = budgetData.yearlyExpenses.find(
+            (y: any) => y.name === yearlyName
+          );
+          if (match) {
+            return { ...it, shouldBe: match.monthlySaving };
+          }
+          return it;
+        });
+      }
+      return clone;
+    });
+  }, [budgetData]);
 
   // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
   const monthlyTotal = monthlySections.flatMap(s => s.items).reduce((s, i) => s + i.amount, 0);

@@ -274,7 +274,7 @@ const monthlyBudget = {
       {
         id: "savings",
         items: [
-          { name: "Apparel Saving", amount: 0 },
+          { name: "Apparel Savings", amount: 0 },
           { name: "Eset Antivirus Savings", amount: 0 },
         ],
       },

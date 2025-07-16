@@ -13,8 +13,8 @@ export default function Add({ label, onClick }: AddBtnProps) {
       onClick={onClick}
       className="flex items-center justify-center px-4 py-2 gap-2 rounded-lg transition-opacity border border-[var(--surface-3)] hover:bg-[var(--surface-3)]"
     >
-      <span className="text-lg">+</span>
-      <span className="text-sm">{label}</span>
+      <div className="text-lg h-8 flex items-center justify-center mb-[2px]">+</div>
+      <div className="text-sm h-8 flex items-center justify-center">{label}</div>
     </button>
   );
 } 

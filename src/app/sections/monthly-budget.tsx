@@ -29,7 +29,7 @@ export default function MonthlyBudget({ budget, month, budgetData }: Props) {
     <section className="flex flex-col gap-4">
       <MonthlyExpenseIncome income={budget.income} month={month} budgetData={budgetData} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <MonthlyExpenseEssentials essentials={budget.essentials} month={month} daysInMonth={daysInMonth} />
+        <MonthlyExpenseEssentials essentials={budget.essentials} month={month} daysInMonth={daysInMonth} budgetData={budgetData} />
         <MonthlyExpenseLuxury luxury={budget.luxury} month={month} daysInMonth={daysInMonth} budgetData={budgetData} />
       </div>
       <MonthlyExpenseInvestments investments={budget.investments} month={month} daysInMonth={daysInMonth} />

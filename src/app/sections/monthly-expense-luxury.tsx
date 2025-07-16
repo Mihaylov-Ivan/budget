@@ -221,15 +221,19 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
       {/* Percentage and Available rows */}
       <div className="flex items-center gap-2">
         <span className="flex-1 font-medium text-[var(--purple)]">Percentage</span>
-        <input
-          type="number"
-          min="0"
-          max="100"
-          step="0.1"
-          value={percentage}
-          onChange={(e) => setPercentage(parseFloat(e.target.value) || 0)}
-          className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
-        />
+        {editing ? (
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            value={percentage}
+            onChange={(e) => setPercentage(parseFloat(e.target.value) || 0)}
+            className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
+          />
+        ) : (
+          <span className="w-24 text-right text-[var(--purple)]">{percentage.toFixed(2)}</span>
+        )}
         <span className="text-[var(--purple)]">%</span>
       </div>
 
