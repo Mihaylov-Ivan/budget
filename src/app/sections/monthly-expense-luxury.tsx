@@ -51,6 +51,18 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const [percentage, setPercentage] = useState(luxury.percentage ?? 80); // Use percentage from data if provided
   const { availableMoney, essentialsTotal } = useAmounts();
 
+  // Handler to add a new luxury item (default to monthly 'expenses' section)
+  const handleAddLuxury = () => {
+    if (!editing) setEditing(true);
+    setMonthlySections((prev) => {
+      const clone: Section[] = JSON.parse(JSON.stringify(prev));
+      const targetIdx = clone.findIndex((s) => s.id === "expenses");
+      const idx = targetIdx !== -1 ? targetIdx : 0;
+      clone[idx].items.push({ name: "", amount: 0 });
+      return clone;
+    });
+  };
+
   // --- Helper to map a savings item name to a yearly expense name ---
   const mapSavingsToYearly = (name: string) => {
     // Remove the trailing " Savings" and anything that comes after
@@ -213,7 +225,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
           Luxury
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Luxury Item" />
+          <Add label="Add Luxury Item" onClick={handleAddLuxury} />
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>

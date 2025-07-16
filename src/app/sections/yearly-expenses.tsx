@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Add from "../components/add";
 import Button from "../components/button";
 import EditBtn from "../components/edit";
@@ -12,27 +12,51 @@ interface Props {
   setData?: (data: YearlyExpenseType[]) => void;
 }
 
+const genUid = () => Math.random().toString(36).slice(2) + Date.now();
+
 export default function YearlyExpenses({ data, setData }: Props) {
   const [editing, setEditing] = useState(false);
-  const [expenses, setExpenses] = useState(data);
+  const initialize = (arr: any[]) => arr.map((e) => ({ _uid: genUid(), ...e }));
+  const [expenses, setExpenses] = useState(initialize(data));
+
+  // Handler to add new yearly expense row
+  const handleAddExpense = () => {
+    if (!editing) setEditing(true);
+    setExpenses(prev => [
+      ...prev,
+      {
+        _uid: genUid(),
+        name: "",
+        startMonth: "",
+        total: 0,
+        totalShouldBe: "0",
+        monthlySaving: 0,
+        saved: 0,
+        missed: 0,
+        used: 0,
+        available: 0,
+      } as any,
+    ]);
+  };
 
   useEffect(() => {
-    setExpenses(data);
+    setExpenses(initialize(data));
   }, [data]);
 
   const toggleEditing = () => {
     if (editing) {
+      const payload = expenses.map(({ _uid, ...rest }) => rest);
       fetch('/api/budget/yearly-expenses', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ yearlyExpenses: expenses }),
+        body: JSON.stringify({ yearlyExpenses: payload }),
       }).catch(console.error);
       setData?.(expenses); // update parent state
     }
     setEditing((p) => !p);
   };
 
-  const handleFieldChange = (
+  const handleFieldChange = useCallback((
     index: number,
     field: keyof typeof expenses[number],
     value: string
@@ -49,7 +73,7 @@ export default function YearlyExpenses({ data, setData }: Props) {
       };
       return copy;
     });
-  };
+  }, []);
 
   return (
     <section className="border border-[var(--surface-3)] rounded-lg p-6 sm:p-8 flex flex-col gap-4 bg-[var(--surface-1)]">
@@ -59,7 +83,7 @@ export default function YearlyExpenses({ data, setData }: Props) {
           Yearly Expense Savings
         </h2>
         <div className="flex gap-2">
-          <Add label="Add Yearly Expense" />
+          <Add label="Add Yearly Expense" onClick={handleAddExpense} />
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>
@@ -106,7 +130,7 @@ export default function YearlyExpenses({ data, setData }: Props) {
           <tbody className="bg-[var(--surface-1)]">
             {editing
               ? expenses.map((exp, idx) => (
-                <tr key={exp.name} className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
+                <tr key={exp._uid} className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
                   <td className="py-2 px-3 whitespace-nowrap text-sm">
                     <input
                       type="text"
@@ -196,7 +220,7 @@ export default function YearlyExpenses({ data, setData }: Props) {
                     />
                     <Button
                       label="Delete"
-                      onClick={() => setExpenses((prev) => prev.filter((_, i) => i !== idx))}
+                      onClick={() => setExpenses((prev) => prev.filter((e) => e._uid !== exp._uid))}
                     />
                   </td>
                 </tr>

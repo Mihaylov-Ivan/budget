@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+const genUid = () => Math.random().toString(36).slice(2) + Date.now();
 import Add from "../components/add";
 import FixedSaving from "../components/fixed-saving";
 import Edit from "../components/edit";
@@ -12,28 +13,47 @@ interface Props {
 
 export default function FixedSavings({ data }: Props) {
   const [editing, setEditing] = useState(false);
-  const [savings, setSavings] = useState(data);
+  // Attach a stable _uid to each row for reliable keying
+  const initializeSavings = (arr: any[]) => arr.map((s) => ({ _uid: genUid(), ...s }));
+  const [savings, setSavings] = useState(initializeSavings(data));
+
+  // Handler to add new saving row
+  const handleAddSaving = () => {
+    if (!editing) setEditing(true);
+    setSavings(prev => [
+      ...prev,
+      {
+        _uid: genUid(),
+        name: "",
+        total: 0,
+        saved: 0,
+        used: 0,
+        available: 0,
+      } as any,
+    ]);
+  };
 
   const handleToggleEdit = () => {
     if (editing) {
       // Persist to DB when leaving edit mode
+      const payload = savings.map(({ _uid, ...rest }) => rest);
       fetch('/api/budget/fixed-savings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fixedSavings: savings }),
+        body: JSON.stringify({ fixedSavings: payload }),
       }).catch(console.error);
     }
     setEditing((prev) => !prev);
   };
 
-  const handleFieldChange = (index: number, field: keyof typeof savings[number], value: string) => {
+  const handleFieldChange = useCallback((index: number, field: keyof typeof savings[number], value: string) => {
     setSavings((prev) => {
       const copy = [...prev];
       //@ts-ignore
       copy[index] = { ...copy[index], [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value) };
       return copy;
     });
-  };
+  }, []);
 
   return (
     <section className="border border-[var(--surface-3)] rounded-lg p-6 sm:p-8 flex flex-col gap-4 bg-[var(--surface-1)]">
@@ -43,7 +63,7 @@ export default function FixedSavings({ data }: Props) {
           Fixed Savings
         </h2>
         <div className="flex gap-2">
-          <Add label="Add Saving Goal" />
+          <Add label="Add Saving Goal" onClick={handleAddSaving} />
           <Edit onClick={handleToggleEdit} />
         </div>
       </div>
@@ -78,12 +98,12 @@ export default function FixedSavings({ data }: Props) {
           <tbody className="bg-[var(--surface-1)]">
             {editing
               ? savings.map((saving, idx) => (
-                <tr key={saving.name} className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
+                <tr key={saving._uid} className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
                   <td className="py-2 px-3 whitespace-nowrap text-sm">
                     <input
                       type="text"
                       value={saving.name}
-                      onChange={(e) => handleFieldChange(idx, "name", e.target.value)}
+                      onChange={(e) => handleFieldChange(idx as number, "name", e.target.value)}
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
@@ -92,7 +112,7 @@ export default function FixedSavings({ data }: Props) {
                       type="number"
                       step="0.01"
                       value={typeof saving.total === "number" ? saving.total : 0}
-                      onChange={(e) => handleFieldChange(idx, "total", e.target.value)}
+                      onChange={(e) => handleFieldChange(idx as number, "total", e.target.value)}
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
@@ -101,7 +121,7 @@ export default function FixedSavings({ data }: Props) {
                       type="number"
                       step="0.01"
                       value={saving.saved}
-                      onChange={(e) => handleFieldChange(idx, "saved", e.target.value)}
+                      onChange={(e) => handleFieldChange(idx as number, "saved", e.target.value)}
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
@@ -110,7 +130,7 @@ export default function FixedSavings({ data }: Props) {
                       type="number"
                       step="0.01"
                       value={saving.used}
-                      onChange={(e) => handleFieldChange(idx, "used", e.target.value)}
+                      onChange={(e) => handleFieldChange(idx as number, "used", e.target.value)}
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
@@ -119,14 +139,14 @@ export default function FixedSavings({ data }: Props) {
                       type="number"
                       step="0.01"
                       value={saving.available}
-                      onChange={(e) => handleFieldChange(idx, "available", e.target.value)}
+                      onChange={(e) => handleFieldChange(idx as number, "available", e.target.value)}
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
                   <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2">
                     {/* Delete still available while editing */}
                     <button
-                      onClick={() => setSavings((prev) => prev.filter((_, i) => i !== idx))}
+                      onClick={() => setSavings((prev) => prev.filter((s) => s._uid !== saving._uid))}
                       className="p-2 rounded-lg border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
                     >
                       Delete

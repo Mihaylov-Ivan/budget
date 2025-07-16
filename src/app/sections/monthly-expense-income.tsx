@@ -16,18 +16,30 @@ interface Props {
   budgetData?: any; // Add budgetData to access previous month's income
 }
 
+const genUid = () => Math.random().toString(36).slice(2) + Date.now();
+
 export default function MonthlyExpenseIncome({ income: initialIncome, month, budgetData }: Props) {
   const [editing, setEditing] = useState(false);
-  const [income, setIncome] = useState(JSON.parse(JSON.stringify(initialIncome)));
+  const initIncome = (arr: any[]) => arr.map((it) => ({ _uid: genUid(), ...it }));
+  const [income, setIncome] = useState(initIncome(JSON.parse(JSON.stringify(initialIncome))));
   const { setAvailableMoney } = useAmounts();
   const [manualAvailableMoney, setManualAvailableMoney] = useState<number | null>(null);
+
+  // Handler to add new income row
+  const handleAddIncome = () => {
+    if (!editing) setEditing(true);
+    setIncome((prev: any) => [
+      ...prev,
+      { _uid: genUid(), name: "", amount: 0 },
+    ]);
+  };
 
   // helper to persist whole income array
   const saveChanges = () => {
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ field: 'income', selectedMonth: month, data: income })
+      body: JSON.stringify({ field: 'income', selectedMonth: month, data: income.map(({ _uid, ...rest }: any) => rest) })
     }).catch(console.error);
   };
 
@@ -71,7 +83,7 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
   }, [availableMoney, setAvailableMoney]);
 
   const handleFieldChange = (index: number, field: "name" | "amount", value: string) => {
-    setIncome((prev: Item[]) => {
+    setIncome((prev: any) => {
       const copy = [...prev];
       copy[index] = {
         ...copy[index],
@@ -86,6 +98,8 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
     setEditing((p) => !p);
   };
 
+  type ItemWithUid = Item & { _uid: string };
+
   return (
     <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">
       {/* Header */}
@@ -94,7 +108,7 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
           Income
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Income" />
+          <Add label="Add Income" onClick={handleAddIncome} />
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>
@@ -103,8 +117,8 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           {editing
-            ? income.map((inc: Item, idx: number) => (
-              <div key={idx} className="flex gap-2 items-center">
+            ? income.map((inc: any, idx: number) => (
+              <div key={inc._uid} className="flex gap-2 items-center">
                 <input
                   type="text"
                   value={inc.name}
@@ -118,11 +132,11 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
                   onChange={(e) => handleFieldChange(idx, "amount", e.target.value)}
                   className="w-28 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
                 />
-                <DeleteBtn onClick={() => setIncome((prev: Item[]) => prev.filter((_, i) => i !== idx))} />
+                <DeleteBtn onClick={() => setIncome((prev: any) => prev.filter((it: any) => it._uid !== inc._uid))} />
               </div>
             ))
-            : income.map((inc: Item) => (
-              <BudgetItem key={inc.name} name={inc.name} amount={inc.amount} color="green" />
+            : income.map((inc: any) => (
+              <BudgetItem key={inc._uid} name={inc.name} amount={inc.amount} color="green" />
             ))}
         </div>
         <BudgetItem name="Total Income" amount={total} color="green" highlight />

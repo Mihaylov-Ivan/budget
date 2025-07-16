@@ -8,7 +8,9 @@ import EditBtn from "../components/edit";
 import { useAmounts } from "../store/useAmounts";
 import { YearlyExpenses as YearlyExpenseType } from "../data";
 
-type Item = { name: string; amount: number; shouldBe?: number };
+const genUid = () => Math.random().toString(36).slice(2) + Date.now();
+
+type Item = { _uid: string; name: string; amount: number; shouldBe?: number };
 type Section = { id: string; items: Item[] };
 
 interface Props {
@@ -36,9 +38,28 @@ function SectionBlock({ title = "", items }: { title?: string; items: Item[] }) 
 
 export default function MonthlyExpenseEssentials({ essentials, month, daysInMonth, budgetData }: Props) {
   const [editing, setEditing] = useState(false);
-  const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(essentials.monthly)));
-  const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(essentials.weekly)));
+  const attachUidToSections = (sections: Section[]) => sections.map(sec => ({
+    ...sec,
+    items: sec.items.map(it => ({ ...it, _uid: genUid() }))
+  }));
+  const attachUidToItems = (arr: any[]) => arr.map(it => ({ ...it, _uid: genUid() }));
+  const [monthlySections, setMonthlySections] = useState<Section[]>(attachUidToSections(JSON.parse(JSON.stringify(essentials.monthly))));
+  const [weekly, setWeekly] = useState<Item[]>(attachUidToItems(JSON.parse(JSON.stringify(essentials.weekly))));
   const { setEssentialsTotal } = useAmounts();
+
+  // Handler to add a new essential expense row (default to 'expenses' monthly section)
+  const handleAddEssential = () => {
+    // Ensure we are editing
+    if (!editing) setEditing(true);
+    setMonthlySections((prev) => {
+      const clone: Section[] = JSON.parse(JSON.stringify(prev));
+      // Find the 'expenses' section or fallback to the first section
+      const targetIdx = clone.findIndex((s) => s.id === "expenses");
+      const idx = targetIdx !== -1 ? targetIdx : 0;
+      clone[idx].items.push({ _uid: genUid(), name: "", amount: 0 });
+      return clone;
+    });
+  };
 
   // --- Helper to map a savings item name to a yearly expense name ---
   const mapSavingsToYearly = (name: string) => {
@@ -117,7 +138,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
     onDelete: (idx: number) => void
   ) =>
     items.map((it, idx) => (
-      <div key={idx} className="flex gap-2 items-center w-full">
+      <div key={it._uid} className="flex gap-2 items-center w-full">
         <input
           type="text"
           value={it.name}
@@ -143,7 +164,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
         <span className="w-20 text-right">Should be</span>
       </div>
       {items.map((it, idx) => (
-        <div key={idx} className="bg-[var(--surface-2)] text-[var(--blue)] rounded-lg px-4 py-2 flex items-center">
+        <div key={it._uid} className="bg-[var(--surface-2)] text-[var(--blue)] rounded-lg px-4 py-2 flex items-center">
           <span className="flex-1">{it.name}</span>
           <span className="w-20 text-right">{it.amount.toFixed(2)}</span>
           <span className="w-20 text-right">{(it.shouldBe ?? 0).toFixed(2)}</span>
@@ -169,7 +190,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
         <span className="w-8" />
       </div>
       {items.map((it, idx) => (
-        <div key={idx} className="flex items-center gap-2">
+        <div key={it._uid} className="flex items-center gap-2">
           <input
             className="flex-1 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
             type="text"
@@ -211,7 +232,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
           Essentials
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Essential" />
+          <Add label="Add Essential" onClick={handleAddEssential} />
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>

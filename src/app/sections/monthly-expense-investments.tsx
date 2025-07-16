@@ -20,12 +20,27 @@ interface Props {
 
 export default function MonthlyExpenseInvestments({ investments, month, daysInMonth }: Props) {
   const [editing, setEditing] = useState(false);
+  const genUid = () => Math.random().toString(36).slice(2) + Date.now();
   // Ensure each item has a percentage (default 0 if absent)
-  const [items, setItems] = useState<Item[]>(
-    JSON.parse(JSON.stringify(investments.monthly)).map((it: Item) => ({ ...it, percentage: it.percentage ?? 0 }))
-  );
+  const initializeItems = (arr: Item[]) => arr.map((it: any) => ({ _uid: genUid(), ...it, percentage: it.percentage ?? 0 }));
+  const [items, setItems] = useState<Item[]>(initializeItems(JSON.parse(JSON.stringify(investments.monthly))));
   const [percentage, setPercentage] = useState(investments.percentage ?? 20);
   const { availableMoney, essentialsTotal } = useAmounts();
+
+  // Handler to add a new investment row
+  const handleAddInvestment = () => {
+    // Automatically enable editing if not already
+    if (!editing) setEditing(true);
+    setItems((prev) => [
+      ...prev,
+      {
+        _uid: genUid(),
+        name: "",
+        amount: 0,
+        percentage: 0,
+      },
+    ]);
+  };
 
   // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
   // Since investments only have monthly items, weekly total is 0
@@ -39,7 +54,7 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
   const unassigned = availableForInvestments - total;
 
   const saveChanges = () => {
-    const payload = { percentage, monthly: items };
+    const payload = { percentage, monthly: items.map(({ _uid, ...rest }: any) => rest) };
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -67,6 +82,8 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
     });
   };
 
+  type ItemWithUid = Item & { _uid: string };
+
   return (
     <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">
       {/* Header */}
@@ -75,7 +92,7 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
           Investments
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Investment" />
+          <Add label="Add Investment" onClick={handleAddInvestment} />
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>
@@ -115,10 +132,10 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
                 <span className="w-20 text-right">%</span>
                 <span className="w-8" />
               </div>
-              {items.map((inv: Item, idx: number) => {
+              {items.map((inv: any, idx: number) => {
                 const shouldBe = availableForInvestments * ((inv.percentage ?? 0) / 100);
                 return (
-                  <div key={idx} className="flex gap-2 items-center w-full">
+                  <div key={inv._uid} className="flex gap-2 items-center w-full">
                     <input
                       type="text"
                       value={inv.name}
@@ -140,7 +157,7 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
                       onChange={(e) => handleFieldChange(idx, "percentage", e.target.value)}
                       className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
                     />
-                    <DeleteBtn onClick={() => setItems((prev: Item[]) => prev.filter((_, i) => i !== idx))} />
+                    <DeleteBtn onClick={() => setItems((prev: any) => prev.filter((it: any) => it._uid !== inv._uid))} />
                   </div>
                 );
               })}
@@ -154,11 +171,11 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
                 <span className="w-20 text-right">Should be</span>
                 <span className="w-20 text-right">%</span>
               </div>
-              {items.map((inv: Item) => {
+              {items.map((inv: any) => {
                 const shouldBe = availableForInvestments * ((inv.percentage ?? 0) / 100);
                 return (
                   <div
-                    key={inv.name}
+                    key={inv._uid}
                     className="bg-[var(--surface-2)] text-[var(--green)] rounded-lg px-4 py-2 flex items-center"
                   >
                     <span className="flex-1">{inv.name}</span>
