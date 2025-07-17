@@ -105,9 +105,24 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
     setEssentialsTotal(total);
   }, [total, setEssentialsTotal]);
 
+  // Helper to strip items with empty names
+  const sanitizeData = () => {
+    const sanitizedMonthly = monthlySections.map((sec) => ({
+      ...sec,
+      items: sec.items.filter((it) => it.name.trim() !== ""),
+    }));
+    const sanitizedWeekly = weekly.filter((it) => it.name.trim() !== "");
+    return { sanitizedMonthly, sanitizedWeekly };
+  };
+
   // Update the database
   const saveChanges = () => {
-    const payload = { monthly: monthlySections, weekly };
+    const { sanitizedMonthly, sanitizedWeekly } = sanitizeData();
+    // Reflect sanitized data in state so UI matches DB
+    setMonthlySections(sanitizedMonthly);
+    setWeekly(sanitizedWeekly);
+
+    const payload = { monthly: sanitizedMonthly, weekly: sanitizedWeekly };
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -234,7 +249,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
           Essentials
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Essential" onClick={handleAddEssential} />
+          {!editing && <Add label="Add Essential" onClick={handleAddEssential} />}
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>

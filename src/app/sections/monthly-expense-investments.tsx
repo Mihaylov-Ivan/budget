@@ -27,6 +27,9 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
   const [percentage, setPercentage] = useState(investments.percentage ?? 20);
   const { availableMoney, essentialsTotal } = useAmounts();
 
+  // filter items without names
+  const sanitizeItems = (arr: Item[]) => arr.filter((it) => it.name.trim() !== "");
+
   // Handler to add a new investment row
   const handleAddInvestment = () => {
     // Automatically enable editing if not already
@@ -54,7 +57,9 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
   const unassigned = availableForInvestments - total;
 
   const saveChanges = () => {
-    const payload = { percentage, monthly: items.map(({ _uid, ...rest }: any) => rest) };
+    const sanitized = sanitizeItems(items);
+    setItems(sanitized);
+    const payload = { percentage, monthly: sanitized.map(({ _uid, ...rest }: any) => rest) };
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -90,7 +95,7 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
           Investments
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Investment" onClick={handleAddInvestment} />
+          {!editing && <Add label="Add Investment" onClick={handleAddInvestment} />}
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>

@@ -91,7 +91,7 @@ export const fixedSavings: FixedSavings[] = [
     available: 2876.74,
   },
   {
-    name: "Tattoo Removal",
+    name: "Tattoo",
     total: 220,
     saved: 220,
     used: 0,
@@ -104,7 +104,7 @@ export const fixedSavings: FixedSavings[] = [
     used: 0,
     available: 9684.95,
   },
-  { name: "Gyno Treatment", total: 2500, saved: 0, used: 0, available: 0 },
+  { name: "Gyno", total: 2500, saved: 0, used: 0, available: 0 },
   { name: "Watch", total: 600, saved: 0, used: 0, available: 0 },
   { name: "Skydiving License", total: 3000, saved: 0, used: 0, available: 0 },
   {

@@ -115,8 +115,21 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const availableForLuxury = (availableMoney - essentialsTotal) * (percentage / 100);
   const unassigned = availableForLuxury - total;
 
+  const sanitizeData = () => {
+    const sanitizedMonthly = monthlySections.map((sec) => ({
+      ...sec,
+      items: sec.items.filter((it) => it.name.trim() !== ""),
+    }));
+    const sanitizedWeekly = weekly.filter((it) => it.name.trim() !== "");
+    return { sanitizedMonthly, sanitizedWeekly };
+  };
+
   const saveChanges = () => {
-    const payload = { percentage, monthly: monthlySections, weekly };
+    const { sanitizedMonthly, sanitizedWeekly } = sanitizeData();
+    setMonthlySections(sanitizedMonthly);
+    setWeekly(sanitizedWeekly);
+
+    const payload = { percentage, monthly: sanitizedMonthly, weekly: sanitizedWeekly };
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -236,7 +249,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
           Luxury
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Luxury Item" onClick={handleAddLuxury} />
+          {!editing && <Add label="Add Luxury Item" onClick={handleAddLuxury} />}
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>

@@ -35,8 +35,10 @@ export default function FixedSavings({ data }: Props) {
 
   const handleToggleEdit = () => {
     if (editing) {
+      const sanitized = savings.filter((s) => s.name.trim() !== "");
+      setSavings(sanitized);
       // Persist to DB when leaving edit mode
-      const payload = savings.map(({ _uid, ...rest }) => rest);
+      const payload = sanitized.map(({ _uid, ...rest }) => rest);
       fetch('/api/budget/fixed-savings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -62,7 +64,7 @@ export default function FixedSavings({ data }: Props) {
           Fixed Savings
         </h2>
         <div className="flex gap-2">
-          <Add label="Add Saving Goal" onClick={handleAddSaving} />
+          {!editing && <Add label="Add Saving Goal" onClick={handleAddSaving} />}
           <Edit onClick={handleToggleEdit} />
         </div>
       </div>

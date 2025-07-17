@@ -45,13 +45,15 @@ export default function YearlyExpenses({ data, setData }: Props) {
 
   const toggleEditing = () => {
     if (editing) {
-      const payload = expenses.map(({ _uid, ...rest }) => rest);
+      const sanitized = expenses.filter((e) => e.name.trim() !== "");
+      setExpenses(sanitized);
+      const payload = sanitized.map(({ _uid, ...rest }) => rest);
       fetch('/api/budget/yearly-expenses', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ yearlyExpenses: payload }),
       }).catch(console.error);
-      setData?.(expenses); // update parent state
+      setData?.(sanitized); // update parent state
     }
     setEditing((p) => !p);
   };
@@ -83,7 +85,7 @@ export default function YearlyExpenses({ data, setData }: Props) {
           Yearly Expense Savings
         </h2>
         <div className="flex gap-2">
-          <Add label="Add Yearly Expense" onClick={handleAddExpense} />
+          {!editing && <Add label="Add Yearly Expense" onClick={handleAddExpense} />}
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>
