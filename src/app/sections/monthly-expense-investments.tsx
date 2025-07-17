@@ -7,8 +7,8 @@ import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
 import { useAmounts } from "../store/useAmounts";
 
-// Added `percentage` optional field for per-item allocation percentage
-interface Item { name: string; amount: number; percentage?: number; }
+// Item with stable uid for React keys
+type Item = { _uid: string; name: string; amount: number; percentage?: number };
 interface Props {
   investments: {
     percentage?: number;
@@ -22,7 +22,7 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
   const [editing, setEditing] = useState(false);
   const genUid = () => Math.random().toString(36).slice(2) + Date.now();
   // Ensure each item has a percentage (default 0 if absent)
-  const initializeItems = (arr: Item[]) => arr.map((it: any) => ({ _uid: genUid(), ...it, percentage: it.percentage ?? 0 }));
+  const initializeItems = (arr: any[]) => arr.map((it: any) => ({ _uid: genUid(), ...it, percentage: it.percentage ?? 0 }));
   const [items, setItems] = useState<Item[]>(initializeItems(JSON.parse(JSON.stringify(investments.monthly))));
   const [percentage, setPercentage] = useState(investments.percentage ?? 20);
   const { availableMoney, essentialsTotal } = useAmounts();
@@ -81,8 +81,6 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
       return copy;
     });
   };
-
-  type ItemWithUid = Item & { _uid: string };
 
   return (
     <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">

@@ -7,6 +7,8 @@ import EditBtn from "../components/edit";
 import DeleteBtn from "../components/delete";
 import { useAmounts } from "../store/useAmounts";
 import { YearlyExpenses as YearlyExpenseType } from "../data";
+// Generate a stable unique id for list items
+const genUid = () => Math.random().toString(36).slice(2) + Date.now();
 
 function Block({ title = "", items }: { title?: string; items: { name: string; amount: number }[] }) {
   return (
@@ -30,7 +32,7 @@ function Block({ title = "", items }: { title?: string; items: { name: string; a
   );
 }
 
-type Item = { name: string; amount: number; shouldBe?: number };
+type Item = { _uid: string; name: string; amount: number; shouldBe?: number };
 type Section = { id: string; items: Item[] };
 
 interface Props {
@@ -46,8 +48,17 @@ interface Props {
 
 export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budgetData }: Props) {
   const [editing, setEditing] = useState(false);
-  const [monthlySections, setMonthlySections] = useState<Section[]>(JSON.parse(JSON.stringify(luxury.monthly)));
-  const [weekly, setWeekly] = useState<Item[]>(JSON.parse(JSON.stringify(luxury.weekly)));
+  // Attach a stable _uid to each row for reliable keying
+  const attachUidToSections = (sections: Section[]) =>
+    sections.map((sec) => ({
+      ...sec,
+      items: sec.items.map((it) => ({ ...it, _uid: genUid() })),
+    }));
+
+  const attachUidToItems = (arr: any[]) => arr.map((it: any) => ({ ...it, _uid: genUid() }));
+
+  const [monthlySections, setMonthlySections] = useState<Section[]>(attachUidToSections(JSON.parse(JSON.stringify(luxury.monthly))));
+  const [weekly, setWeekly] = useState<Item[]>(attachUidToItems(JSON.parse(JSON.stringify(luxury.weekly))));
   const [percentage, setPercentage] = useState(luxury.percentage ?? 80); // Use percentage from data if provided
   const { availableMoney, essentialsTotal } = useAmounts();
 
@@ -58,7 +69,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
       const clone: Section[] = JSON.parse(JSON.stringify(prev));
       const targetIdx = clone.findIndex((s) => s.id === "expenses");
       const idx = targetIdx !== -1 ? targetIdx : 0;
-      clone[idx].items.push({ name: "", amount: 0 });
+      clone[idx].items.push({ _uid: genUid(), name: "", amount: 0 });
       return clone;
     });
   };
@@ -138,10 +149,10 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const renderEditRows = (
     items: Item[],
     onChange: (idx: number, field: "name" | "amount", val: string) => void,
-    onDelete: (idx: number) => void
+    onDelete: (item: Item) => void
   ) =>
     items.map((it, idx) => (
-      <div key={idx} className="flex gap-2 items-center w-full">
+      <div key={it._uid} className="flex gap-2 items-center w-full">
         <input
           type="text"
           value={it.name}
@@ -155,7 +166,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
           onChange={(e) => onChange(idx, "amount", e.target.value)}
           className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
         />
-        <DeleteBtn onClick={() => onDelete(idx)} />
+        <DeleteBtn onClick={() => onDelete(it)} />
       </div>
     ));
 
@@ -186,7 +197,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
       field: "name" | "amount" | "shouldBe",
       val: string
     ) => void,
-    onDelete: (idx: number) => void
+    onDelete: (item: Item) => void
   ) => (
     <div className="flex flex-col gap-1 w-full">
       <div className="px-4 flex items-center text-sm font-medium text-[var(--gray)] mb-1">
@@ -196,7 +207,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
         <span className="w-8" />
       </div>
       {items.map((it, idx) => (
-        <div key={idx} className="flex items-center gap-2">
+        <div key={it._uid} className="flex items-center gap-2">
           <input
             className="flex-1 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
             type="text"
@@ -211,7 +222,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
             className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
           />
           <span className="w-20 text-right">0</span>
-          <DeleteBtn onClick={() => onDelete(idx)} />
+          <DeleteBtn onClick={() => onDelete(it)} />
         </div>
       ))}
     </div>
@@ -263,20 +274,20 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
                     ? renderSavingsEditRows(
                       sec.items,
                       (idx, field, val) => handleMonthlyItemChange(sIdx, idx, field, val),
-                      (idx) =>
+                      (item) =>
                         setMonthlySections((prev) => {
                           const copy = [...prev];
-                          copy[sIdx].items = copy[sIdx].items.filter((_, i) => i !== idx);
+                          copy[sIdx].items = copy[sIdx].items.filter((i) => i._uid !== item._uid);
                           return copy;
                         })
                     )
                     : renderEditRows(
                       sec.items,
                       (idx, field, val) => handleMonthlyItemChange(sIdx, idx, field, val),
-                      (idx) =>
+                      (item) =>
                         setMonthlySections((prev) => {
                           const copy = [...prev];
-                          copy[sIdx].items = copy[sIdx].items.filter((_, i) => i !== idx);
+                          copy[sIdx].items = copy[sIdx].items.filter((i) => i._uid !== item._uid);
                           return copy;
                         })
                     )}
@@ -298,7 +309,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
                   };
                   return copy;
                 }),
-              (idx) => setWeekly((prev) => prev.filter((_, i) => i !== idx))
+              (item) => setWeekly((prev) => prev.filter((i) => i._uid !== item._uid))
             )}
           </>
         ) : (

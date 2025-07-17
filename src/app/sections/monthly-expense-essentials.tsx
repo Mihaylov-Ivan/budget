@@ -43,6 +43,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
     items: sec.items.map(it => ({ ...it, _uid: genUid() }))
   }));
   const attachUidToItems = (arr: any[]) => arr.map(it => ({ ...it, _uid: genUid() }));
+
   const [monthlySections, setMonthlySections] = useState<Section[]>(attachUidToSections(JSON.parse(JSON.stringify(essentials.monthly))));
   const [weekly, setWeekly] = useState<Item[]>(attachUidToItems(JSON.parse(JSON.stringify(essentials.weekly))));
   const { setEssentialsTotal } = useAmounts();
@@ -104,6 +105,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
     setEssentialsTotal(total);
   }, [total, setEssentialsTotal]);
 
+  // Update the database
   const saveChanges = () => {
     const payload = { monthly: monthlySections, weekly };
     fetch('/api/budget/monthly-budgets', {
@@ -135,7 +137,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
   const renderEditRows = (
     items: Item[],
     onChange: (idx: number, field: "name" | "amount", val: string) => void,
-    onDelete: (idx: number) => void
+    onDelete: (item: Item) => void
   ) =>
     items.map((it, idx) => (
       <div key={it._uid} className="flex gap-2 items-center w-full">
@@ -152,7 +154,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
           onChange={(e) => onChange(idx, "amount", e.target.value)}
           className="w-24 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
         />
-        <DeleteBtn onClick={() => onDelete(idx)} />
+        <DeleteBtn onClick={() => onDelete(it)} />
       </div>
     ));
 
@@ -180,7 +182,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
       field: "name" | "amount" | "shouldBe",
       val: string
     ) => void,
-    onDelete: (idx: number) => void
+    onDelete: (item: Item) => void
   ) => (
     <div className="flex flex-col gap-1 w-full">
       <div className="px-4 flex items-center text-sm font-medium text-[var(--gray)] mb-1">
@@ -212,17 +214,17 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
             className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
           /> */}
           <span className="w-20 text-right">0</span>
-          <DeleteBtn onClick={() => onDelete(idx)} />
+          {/* <button
+            onClick={() => onDelete(it)}
+            className="p-2 rounded-lg border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
+          >
+            Delete
+          </button> */}
+          <DeleteBtn onClick={() => onDelete(it)} />
         </div>
       ))}
     </div>
   );
-
-  const SECTION_TITLES: Record<string, string> = {
-    nextMonth: "Next Month",
-    expenses: "Expenses",
-    savings: "Savings",
-  };
 
   return (
     <div className="border border-[var(--surface-3)] rounded-lg p-6 flex flex-col gap-4">
@@ -250,20 +252,20 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
                     ? renderSavingsEditRows(
                       sec.items,
                       (idx, field, val) => updateMonthlyItem(sIdx, idx, field, val),
-                      (idx) =>
+                      (item) =>
                         setMonthlySections((prev) => {
                           const copy = [...prev];
-                          copy[sIdx].items = copy[sIdx].items.filter((_, i) => i !== idx);
+                          copy[sIdx].items = copy[sIdx].items.filter((i) => i._uid !== item._uid);
                           return copy;
                         })
                     )
                     : renderEditRows(
                       sec.items,
                       (idx, field, val) => updateMonthlyItem(sIdx, idx, field, val),
-                      (idx) =>
+                      (item) =>
                         setMonthlySections((prev) => {
                           const copy = [...prev];
-                          copy[sIdx].items = copy[sIdx].items.filter((_, i) => i !== idx);
+                          copy[sIdx].items = copy[sIdx].items.filter((i) => i._uid !== item._uid);
                           return copy;
                         })
                     )}
@@ -275,7 +277,7 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
             {renderEditRows(
               weekly,
               (idx, field, val) => updateWeeklyItem(idx, field, val),
-              (idx) => setWeekly((prev) => prev.filter((_, i) => i !== idx))
+              (item) => setWeekly((prev) => prev.filter((i) => i._uid !== item._uid))
             )}
           </>
         ) : (

@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-const genUid = () => Math.random().toString(36).slice(2) + Date.now();
+import { useCallback, useState } from "react";
 import Add from "../components/add";
-import FixedSaving from "../components/fixed-saving";
 import Edit from "../components/edit";
+import FixedSaving from "../components/fixed-saving";
 import type { FixedSavings as FixedSavingType } from "../data";
+const genUid = () => Math.random().toString(36).slice(2) + Date.now();
 
 interface Props {
   data: FixedSavingType[];
@@ -49,7 +49,6 @@ export default function FixedSavings({ data }: Props) {
   const handleFieldChange = useCallback((index: number, field: keyof typeof savings[number], value: string) => {
     setSavings((prev) => {
       const copy = [...prev];
-      //@ts-ignore
       copy[index] = { ...copy[index], [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value) };
       return copy;
     });
