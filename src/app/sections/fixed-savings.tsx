@@ -87,7 +87,7 @@ export default function FixedSavings({ data }: Props) {
                 Used
               </th>
               <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
-                Available to Use
+                Available
               </th>
               {editing && (
                 <th className="py-3 px-3 text-xs font-medium uppercase tracking-wider text-[var(--gray)]">
