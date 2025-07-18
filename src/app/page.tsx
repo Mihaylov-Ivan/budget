@@ -74,7 +74,7 @@ export default function Home() {
         </div>
       </header>
       {/* Sections */}
-      <YearlyMoneyDistribution distribution={budgetData.yearlyDistribution} />
+      <YearlyMoneyDistribution budgetData={budgetData} selectedMonth={selectedMonth as (typeof months)[number]} />
       {monthlyBudget && (
         <Subpages
           fixedSavings={budgetData.fixedSavings}

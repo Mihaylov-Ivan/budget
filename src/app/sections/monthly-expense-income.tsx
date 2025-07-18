@@ -27,6 +27,7 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
 
   // Handler to add new income row
   const handleAddIncome = () => {
+    // Ensure we are editing
     if (!editing) setEditing(true);
     setIncome((prev: any) => [
       ...prev,
@@ -34,12 +35,21 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
     ]);
   };
 
+  // Helper to strip items with empty names
+  const sanitizeData = () => {
+    return income.filter((it) => it.name.trim() !== "");
+  };
+
   // helper to persist whole income array
   const saveChanges = () => {
+    const sanitizedIncome = sanitizeData();
+    // Reflect sanitized data in state so UI matches DB
+    setIncome(sanitizedIncome);
+
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ field: 'income', selectedMonth: month, data: income.map(({ _uid, ...rest }: any) => rest) })
+      body: JSON.stringify({ field: 'income', selectedMonth: month, data: sanitizedIncome.map(({ _uid, ...rest }: any) => rest) })
     }).catch(console.error);
   };
 
@@ -108,7 +118,7 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
           Income
         </h3>
         <div className="flex gap-2">
-          <Add label="Add Income" onClick={handleAddIncome} />
+          {!editing && <Add label="Add Income" onClick={handleAddIncome} />}
           <EditBtn onClick={toggleEditing} />
         </div>
       </div>
