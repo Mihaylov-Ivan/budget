@@ -1,14 +1,14 @@
 "use client";
 
-import React from "react";
-import MonthlyExpenseIncome from "./monthly-expense-income";
+import { months } from "../data";
 import MonthlyExpenseEssentials from "./monthly-expense-essentials";
-import MonthlyExpenseLuxury from "./monthly-expense-luxury";
+import MonthlyExpenseIncome from "./monthly-expense-income";
 import MonthlyExpenseInvestments from "./monthly-expense-investments";
+import MonthlyExpenseLuxury from "./monthly-expense-luxury";
 
 interface Props {
   budget: any;
-  month: string;
+  month: (typeof months)[number];
   budgetData?: any; // Add budgetData to pass to income component
 }
 
