@@ -33,7 +33,7 @@ export default function Home() {
   // Map current month to June-starting array: Jan=7, Feb=8, ..., May=11, Jun=0, Jul=1, ..., Dec=5
   const mappedIndex = currentMonthIndex >= 5 ? currentMonthIndex - 5 : currentMonthIndex + 7;
   const defaultMonth = months[mappedIndex] ?? months[0];
-  const [selectedMonth, setSelectedMonth] = useState<string>(defaultMonth);
+  const [selectedMonth, setSelectedMonth] = useState<(typeof months)[number]>(defaultMonth);
 
   useEffect(() => {
     const fetchBudgetData = async () => {
