@@ -21,7 +21,9 @@ const genUid = () => Math.random().toString(36).slice(2) + Date.now();
 export default function MonthlyExpenseIncome({ income: initialIncome, month, budgetData }: Props) {
   const [editing, setEditing] = useState(false);
   const initIncome = (arr: any[]) => arr.map((it) => ({ _uid: genUid(), ...it }));
-  const [income, setIncome] = useState(initIncome(JSON.parse(JSON.stringify(initialIncome))));
+  // Filter out Available Money from UI state to avoid duplication
+  const filteredInitialIncome = initialIncome.filter((item: any) => item.name !== 'Available Money');
+  const [income, setIncome] = useState(initIncome(JSON.parse(JSON.stringify(filteredInitialIncome))));
   const { setAvailableMoney } = useAmounts();
   const [manualAvailableMoney, setManualAvailableMoney] = useState<number | null>(null);
 
@@ -35,25 +37,46 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
     ]);
   };
 
-  // Helper to strip items with empty names
+  // Helper to strip items with empty names and exclude Available Money
   const sanitizeData = () => {
-    return income.filter((it) => it.name.trim() !== "");
+    return income.filter((it) => it.name.trim() !== "" && it.name !== 'Available Money');
   };
 
   // helper to persist whole income array
   const saveChanges = () => {
     const sanitizedIncome = sanitizeData();
-    // Reflect sanitized data in state so UI matches DB
-    setIncome(sanitizedIncome);
+
+    // For first month, include Available Money in the income array for database
+    let incomeToSave = sanitizedIncome.map(({ _uid, ...rest }: any) => rest);
+
+    if (isFirstMonth && manualAvailableMoney !== null) {
+      // Add or update Available Money in the income array
+      const existingAvailableMoneyIndex = incomeToSave.findIndex((item: any) => item.name === 'Available Money');
+      if (existingAvailableMoneyIndex >= 0) {
+        incomeToSave[existingAvailableMoneyIndex].amount = manualAvailableMoney;
+      } else {
+        incomeToSave.push({ name: 'Available Money', amount: manualAvailableMoney });
+      }
+    }
+
+    // Reflect sanitized data in state so UI matches DB (but exclude Available Money from UI state)
+    const uiIncome = sanitizedIncome.filter((item: any) => item.name !== 'Available Money');
+    setIncome(uiIncome);
 
     fetch('/api/budget/monthly-budgets', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ field: 'income', selectedMonth: month, data: sanitizedIncome.map(({ _uid, ...rest }: any) => rest) })
-    }).catch(console.error);
+      body: JSON.stringify({ field: 'income', selectedMonth: month, data: incomeToSave })
+    })
+      .then(() => {
+        // Refresh the budget data to reflect changes across all months
+        return fetch('/api/budget');
+      })
+      .then((res) => res?.json?.())
+      .catch(console.error);
   };
 
-  const total = income.reduce((sum: number, item: Item) => sum + item.amount, 0);
+  const total = income.filter((item: Item) => item.name !== 'Available Money').reduce((sum: number, item: Item) => sum + item.amount, 0);
 
   const isFirstMonth = month === months[0];
 
@@ -62,6 +85,18 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
     if (isFirstMonth && manualAvailableMoney !== null) {
       return manualAvailableMoney;
     }
+
+    // For first month, fetch Available Money from database
+    if (isFirstMonth && budgetData?.monthlyBudgets) {
+      const firstMonthBudget = budgetData.monthlyBudgets.find((b: any) => b.month === month);
+      if (firstMonthBudget?.income) {
+        const availableMoneyItem = firstMonthBudget.income.find((item: any) => item.name === 'Available Money');
+        if (availableMoneyItem) {
+          return availableMoneyItem.amount;
+        }
+      }
+    }
+
     if (!budgetData?.monthlyBudgets) return 0;
 
     const currentMonthIndex = months.indexOf(month);
@@ -79,13 +114,26 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
       nextMonthSavings = nextMonthItem?.amount ?? 0;
     }
 
-    // Calculate previous month's income
-    const previousMonthIncome = previousMonthBudget.income?.reduce((sum: number, item: Item) => sum + item.amount, 0) ?? 0;
+    // Calculate previous month's income (excluding Available Money)
+    const previousMonthIncome = previousMonthBudget.income?.filter((item: Item) => item.name !== 'Available Money').reduce((sum: number, item: Item) => sum + item.amount, 0) ?? 0;
 
     return previousMonthIncome + nextMonthSavings;
   };
 
   const availableMoney = getPreviousMonthIncome();
+
+  // Initialize manualAvailableMoney from database for first month
+  useEffect(() => {
+    if (isFirstMonth && budgetData?.monthlyBudgets && manualAvailableMoney === null) {
+      const firstMonthBudget = budgetData.monthlyBudgets.find((b: any) => b.month === month);
+      if (firstMonthBudget?.income) {
+        const availableMoneyItem = firstMonthBudget.income.find((item: any) => item.name === 'Available Money');
+        if (availableMoneyItem) {
+          setManualAvailableMoney(availableMoneyItem.amount);
+        }
+      }
+    }
+  }, [isFirstMonth, budgetData, month, manualAvailableMoney]);
 
   // Update the store when availableMoney changes
   useEffect(() => {

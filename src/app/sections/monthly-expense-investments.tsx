@@ -64,7 +64,13 @@ export default function MonthlyExpenseInvestments({ investments, month, daysInMo
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ field: 'investments', selectedMonth: month, data: payload })
-    }).catch(console.error);
+    })
+      .then(() => {
+        // Refresh the budget data to reflect changes across all months
+        return fetch('/api/budget');
+      })
+      .then((res) => res?.json?.())
+      .catch(console.error);
   };
 
   const toggleEditing = () => {

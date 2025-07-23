@@ -62,14 +62,23 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const [percentage, setPercentage] = useState(luxury.percentage ?? 80); // Use percentage from data if provided
   const { availableMoney, essentialsTotal } = useAmounts();
 
-  // Handler to add a new luxury item (default to monthly 'expenses' section)
+  // Handler to add a new luxury item to all subsections
   const handleAddLuxury = () => {
     if (!editing) setEditing(true);
+
+    // Add to all monthly sections
     setMonthlySections((prev) => {
       const clone: Section[] = JSON.parse(JSON.stringify(prev));
-      const targetIdx = clone.findIndex((s) => s.id === "expenses");
-      const idx = targetIdx !== -1 ? targetIdx : 0;
-      clone[idx].items.push({ _uid: genUid(), name: "", amount: 0 });
+      clone.forEach((section) => {
+        section.items.push({ _uid: genUid(), name: "", amount: 0 });
+      });
+      return clone;
+    });
+
+    // Add to weekly section
+    setWeekly((prev) => {
+      const clone = JSON.parse(JSON.stringify(prev));
+      clone.push({ _uid: genUid(), name: "", amount: 0 });
       return clone;
     });
   };
@@ -134,7 +143,13 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ field: 'luxury', selectedMonth: month, data: payload })
-    }).catch(console.error);
+    })
+      .then(() => {
+        // Refresh the budget data to reflect changes across all months
+        return fetch('/api/budget');
+      })
+      .then((res) => res?.json?.())
+      .catch(console.error);
   };
 
   const toggleEditing = () => {
