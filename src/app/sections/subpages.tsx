@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import SubpageSelector, { SubpageKey } from "../components/subpage-selector";
+import type { FixedSavings as FixedSavingType, YearlyExpenses as YearlyExpenseType, months } from "../data";
 import FixedSavings from "./fixed-savings";
-import YearlyExpenses from "./yearly-expenses";
 import MonthlyBudget from "./monthly-budget";
 import Overview from "./overview";
-import type { FixedSavings as FixedSavingType, YearlyExpenses as YearlyExpenseType } from "../data";
+import YearlyExpenses from "./yearly-expenses";
 
 interface Props {
   fixedSavings: FixedSavingType[];
   yearlyExpenses: YearlyExpenseType[];
   monthlyBudget: any;
-  month: string;
+  month: (typeof months)[number];
   budgetData?: any;
 }
 
