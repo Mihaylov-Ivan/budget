@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Add from "../components/add";
 import Button from "../components/button";
+import Delete from "../components/delete";
 import EditBtn from "../components/edit";
 import YearlyExpense from "../components/yearly-expense";
 import type { YearlyExpenses as YearlyExpenseType } from "../data";
@@ -211,7 +212,7 @@ export default function YearlyExpenses({ data, setData }: Props) {
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2">
+                  <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2 justify-center items-center">
                     <Button
                       label="Saved"
                       onClick={() => { /* TODO: implement saved action */ }}
@@ -220,8 +221,7 @@ export default function YearlyExpenses({ data, setData }: Props) {
                       label="Missed"
                       onClick={() => { /* TODO: implement missed action */ }}
                     />
-                    <Button
-                      label="Delete"
+                    <Delete
                       onClick={() => setExpenses((prev) => prev.filter((e) => e._uid !== exp._uid))}
                     />
                   </td>

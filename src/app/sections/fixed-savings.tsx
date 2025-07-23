@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import Add from "../components/add";
+import Delete from "../components/delete";
 import Edit from "../components/edit";
 import FixedSaving from "../components/fixed-saving";
 import type { FixedSavings as FixedSavingType } from "../data";
@@ -144,14 +145,11 @@ export default function FixedSavings({ data }: Props) {
                       className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
                     />
                   </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2">
+                  <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2 justify-center items-center">
                     {/* Delete still available while editing */}
-                    <button
+                    <Delete
                       onClick={() => setSavings((prev) => prev.filter((s) => s._uid !== saving._uid))}
-                      className="p-2 rounded-lg border border-[var(--surface-4)] hover:bg-[var(--surface-4)]"
-                    >
-                      Delete
-                    </button>
+                    />
                   </td>
                 </tr>
               ))
