@@ -14,8 +14,26 @@ export function useAvailableMoney(
     if (!budgetData?.monthlyBudgets) return 0;
 
     const currentMonthIndex = months.indexOf(selectedMonth);
-    const previousMonthIndex =
-      currentMonthIndex === 0 ? months.length - 1 : currentMonthIndex - 1;
+    const isFirstMonth = currentMonthIndex === 0;
+
+    // For first month, get Available Money from the current month's income
+    if (isFirstMonth) {
+      const currentMonthBudget = budgetData.monthlyBudgets.find(
+        (b: any) => b.month === selectedMonth
+      );
+      if (currentMonthBudget?.income) {
+        const availableMoneyItem = currentMonthBudget.income.find(
+          (item: any) => item.name === "Available Money"
+        );
+        if (availableMoneyItem) {
+          return availableMoneyItem.amount;
+        }
+      }
+      return 0;
+    }
+
+    // For other months, calculate from previous month's income + next month savings
+    const previousMonthIndex = currentMonthIndex - 1;
     const previousMonth = months[previousMonthIndex];
 
     const previousMonthBudget = budgetData.monthlyBudgets.find(
@@ -37,12 +55,11 @@ export function useAvailableMoney(
       nextMonthSavings = nextMonthItem?.amount ?? 0;
     }
 
-    // Calculate previous month's income
+    // Calculate previous month's income (excluding Available Money)
     const previousMonthIncome =
-      previousMonthBudget.income?.reduce(
-        (sum: number, item: Item) => sum + item.amount,
-        0
-      ) ?? 0;
+      previousMonthBudget.income
+        ?.filter((item: Item) => item.name !== "Available Money")
+        .reduce((sum: number, item: Item) => sum + item.amount, 0) ?? 0;
 
     return previousMonthIncome + nextMonthSavings;
   }, [selectedMonth, budgetData]);

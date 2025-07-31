@@ -92,29 +92,6 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
     return base;
   };
 
-  // Populate `shouldBe` for savings items based on yearly expenses monthlySaving
-  useEffect(() => {
-    if (!budgetData?.yearlyExpenses) return;
-
-    setMonthlySections((prev) => {
-      const clone: Section[] = JSON.parse(JSON.stringify(prev));
-      const savingsSection = clone.find((s) => s.id === "savings");
-      if (savingsSection) {
-        savingsSection.items = savingsSection.items.map((it) => {
-          const yearlyName = mapSavingsToYearly(it.name);
-          const match: YearlyExpenseType | undefined = budgetData.yearlyExpenses.find(
-            (y: any) => y.name === yearlyName
-          );
-          if (match) {
-            return { ...it, shouldBe: match.monthlySaving };
-          }
-          return it;
-        });
-      }
-      return clone;
-    });
-  }, [budgetData]);
-
   // Calculate total: (sum of monthly) + (sum of weekly / 7 * days in month)
   const monthlyTotal = monthlySections.flatMap((s) => s.items).reduce((s, i) => s + i.amount, 0);
   const weeklyTotal = weekly.reduce((s, i) => s + i.amount, 0);
@@ -123,6 +100,37 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
 
   const availableForLuxury = (availableMoney - essentialsTotal) * (percentage / 100);
   const unassigned = availableForLuxury - total;
+
+  // Populate `shouldBe` for savings items based on yearly expenses monthlySaving and available money percentages
+  useEffect(() => {
+    setMonthlySections((prev) => {
+      const clone: Section[] = JSON.parse(JSON.stringify(prev));
+      const savingsSection = clone.find((s) => s.id === "savings");
+      if (savingsSection) {
+        savingsSection.items = savingsSection.items.map((it) => {
+          // Calculate shouldBe based on percentage values in brackets at the end of field names
+          const percentageMatch = it.name.match(/\((\d+(?:\.\d+)?)%\)$/);
+          if (percentageMatch) {
+            const percentageValue = parseFloat(percentageMatch[1]) / 100;
+            return { ...it, shouldBe: availableForLuxury * percentageValue };
+          }
+
+          // Fall back to yearly expenses logic for other savings items
+          if (budgetData?.yearlyExpenses) {
+            const yearlyName = mapSavingsToYearly(it.name);
+            const match: YearlyExpenseType | undefined = budgetData.yearlyExpenses.find(
+              (y: any) => y.name === yearlyName
+            );
+            if (match) {
+              return { ...it, shouldBe: match.monthlySaving };
+            }
+          }
+          return it;
+        });
+      }
+      return clone;
+    });
+  }, [availableForLuxury, budgetData]);
 
   const sanitizeData = () => {
     const sanitizedMonthly = monthlySections.map((sec) => ({
@@ -249,7 +257,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
             onChange={(e) => onChange(idx, "amount", e.target.value)}
             className="w-20 bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 text-right"
           />
-          <span className="w-20 text-right">0</span>
+          <span className="w-20 text-right">{(it.shouldBe ?? 0).toFixed(2)}</span>
           <DeleteBtn onClick={() => onDelete(it)} />
         </div>
       ))}

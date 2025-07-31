@@ -36,8 +36,14 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
 
     const receivedIncomeCalc = (budgetData.monthlyBudgets ?? []).reduce((acc: number, b: any) => {
       const idx = months.indexOf(b.month);
-      if (idx >= 0 && idx < selectedMonthIndex) {
-        const monthlyIncome = (b.income ?? []).reduce((sum: number, item: { amount: number }) => sum + item.amount, 0);
+      if (idx >= 0 && idx <= selectedMonthIndex) {
+        const monthlyIncome = (b.income ?? []).reduce((sum: number, item: { amount: number; name: string }) => {
+          // Filter out "Available Money" as it's not actual income
+          if (item.name === 'Available Money') {
+            return sum;
+          }
+          return sum + item.amount;
+        }, 0);
         return acc + monthlyIncome;
       }
       return acc;
@@ -55,6 +61,8 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
     );
 
     const shouldHaveCalc = fixedSavingsAvailable + yearlyExpensesAvailable + availableMoney;
+
+    console.log(fixedSavingsAvailable, yearlyExpensesAvailable, availableMoney);
 
     const actualVal = editing
       ? actualEditValue
