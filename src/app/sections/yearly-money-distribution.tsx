@@ -49,7 +49,8 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       return acc;
     }, 0);
 
-    // Should have – fixed savings available + yearly expenses available + available money for selected month
+    // Should have – fixed savings available + yearly expenses available + available money
+    // Exclude all monthly essentials and luxury savings expenses up to the selected month
     const fixedSavingsAvailable = (budgetData.fixedSavings ?? []).reduce(
       (sum: number, s: any) => sum + (typeof s.available === "number" ? s.available : 0),
       0
@@ -60,9 +61,49 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       0
     );
 
-    const shouldHaveCalc = fixedSavingsAvailable + yearlyExpensesAvailable + availableMoney;
+    // Calculate total amount allocated to savings (essentials + luxury) for the selected month only
+    const sumSectionItems = (section: any) =>
+      (section?.items ?? []).reduce((s: number, it: any) => s + (typeof it.amount === "number" ? it.amount : 0), 0);
 
-    console.log(fixedSavingsAvailable, yearlyExpensesAvailable, availableMoney);
+    const selectedMonthBudget = (budgetData.monthlyBudgets ?? []).find(
+      (b: any) => b.month === selectedMonth
+    );
+
+    let savingsExpensesTotal = 0;
+    if (selectedMonthBudget) {
+      // Essentials "savings" section
+      const essentialsSavingsSection = selectedMonthBudget.essentials?.monthly?.find(
+        (s: any) => typeof s.id === "string" && s.id.trim().toLowerCase().startsWith("savings")
+      );
+      const essentialsSavings = sumSectionItems(essentialsSavingsSection);
+
+      // Luxury "savings" section
+      const luxurySavingsSection = selectedMonthBudget.luxury?.monthly?.find(
+        (s: any) => typeof s.id === "string" && s.id.trim().toLowerCase().startsWith("savings")
+      );
+      const luxurySavings = sumSectionItems(luxurySavingsSection);
+
+      savingsExpensesTotal = essentialsSavings + luxurySavings;
+    }
+
+    // Investment items whose name ends with "Savings"
+    const investmentSavingsTotal =
+      (selectedMonthBudget?.investments?.monthly ?? []).reduce(
+        (sum: number, inv: any) => {
+          const name = (inv.name ?? "").trim();
+          return /Savings\s*$/i.test(name)
+            ? sum + (typeof inv.amount === "number" ? inv.amount : 0)
+            : sum;
+        },
+        0
+      );
+
+    const shouldHaveCalc =
+      fixedSavingsAvailable +
+      yearlyExpensesAvailable +
+      availableMoney -
+      savingsExpensesTotal -
+      investmentSavingsTotal;
 
     const actualVal = editing
       ? actualEditValue
