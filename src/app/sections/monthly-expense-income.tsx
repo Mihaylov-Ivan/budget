@@ -80,23 +80,8 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
 
   const isFirstMonth = month === months[0];
 
-  // Calculate available money from previous month's income + next month savings
+  // Calculate available money as the total income from the previous month
   const getPreviousMonthIncome = () => {
-    if (isFirstMonth && manualAvailableMoney !== null) {
-      return manualAvailableMoney;
-    }
-
-    // For first month, fetch Available Money from database
-    if (isFirstMonth && budgetData?.monthlyBudgets) {
-      const firstMonthBudget = budgetData.monthlyBudgets.find((b: any) => b.month === month);
-      if (firstMonthBudget?.income) {
-        const availableMoneyItem = firstMonthBudget.income.find((item: any) => item.name === 'Available Money');
-        if (availableMoneyItem) {
-          return availableMoneyItem.amount;
-        }
-      }
-    }
-
     if (!budgetData?.monthlyBudgets) return 0;
 
     const currentMonthIndex = months.indexOf(month);
@@ -106,18 +91,12 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
     const previousMonthBudget = budgetData.monthlyBudgets.find((b: any) => b.month === previousMonth);
     if (!previousMonthBudget) return 0;
 
-    // Find the nextMonth section in the previous month's essentials
-    const nextMonthSection = previousMonthBudget.essentials?.monthly?.find((s: any) => s.id === 'nextMonth' || s.id === 'nextMonth,');
-    let nextMonthSavings = 0;
-    if (nextMonthSection?.items) {
-      const nextMonthItem = nextMonthSection.items.find((item: any) => item.name === 'Next Month Savings' || item.name === 'Next Month Savings,');
-      nextMonthSavings = nextMonthItem?.amount ?? 0;
-    }
+    // Calculate previous month's income (excluding 'Available Money')
+    const previousMonthIncome = previousMonthBudget.income?.
+      filter((item: Item) => item.name !== 'Available Money').
+      reduce((sum: number, item: Item) => sum + item.amount, 0) ?? 0;
 
-    // Calculate previous month's income (excluding Available Money)
-    const previousMonthIncome = previousMonthBudget.income?.filter((item: Item) => item.name !== 'Available Money').reduce((sum: number, item: Item) => sum + item.amount, 0) ?? 0;
-
-    return previousMonthIncome + nextMonthSavings;
+    return previousMonthIncome;
   };
 
   const availableMoney = getPreviousMonthIncome();
