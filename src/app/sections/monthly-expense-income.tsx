@@ -114,6 +114,7 @@ export default function MonthlyExpenseIncome({ income: initialIncome, month, bud
     }
   }, [isFirstMonth, budgetData, month, manualAvailableMoney]);
 
+
   useEffect(() => {
     setAvailableMoney(availableMoney);
   }, [availableMoney, setAvailableMoney]);
