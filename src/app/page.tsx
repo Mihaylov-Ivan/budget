@@ -40,7 +40,6 @@ export default function Home() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_WEBSITE_URL!}/api/budget`);
       const data = await response.json();
       setBudgetData(data);
-      console.log(data);
     };
     fetchBudgetData();
 

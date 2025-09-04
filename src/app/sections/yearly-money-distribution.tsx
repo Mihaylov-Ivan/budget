@@ -1,8 +1,8 @@
-import React, { useMemo, useState, useEffect } from "react";
-import YearlyCard from "../components/yearly-card";
-import { months } from "../data";
-import type { YearlyCardData } from "../data";
+import { useEffect, useMemo, useState } from "react";
 import EditBtn from "../components/edit";
+import YearlyCard from "../components/yearly-card";
+import type { YearlyCardData } from "../data";
+import { months } from "../data";
 import { useAvailableMoney } from "../hooks/useAvailableMoney";
 
 interface Props {
