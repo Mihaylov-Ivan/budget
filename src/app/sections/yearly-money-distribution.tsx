@@ -58,14 +58,47 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       0
     );
 
-    // Get "Available Money" from the selected month's income array
+    // Get "Available Money" from the selected month
+    // For first month (June), it's stored in the database
+    // For other months, it's calculated from previous month's income (same logic as Income component)
     const selectedMonthBudget = (budgetData.monthlyBudgets ?? []).find(
       (b: any) => b.month === selectedMonth
     );
 
-    const availableMoneyFromSelectedMonth = (selectedMonthBudget?.income ?? []).find(
+    // First, check if "Available Money" exists in the selected month's income array (stored in DB)
+    const availableMoneyItem = (selectedMonthBudget?.income ?? []).find(
       (item: { name: string; amount: number }) => item.name === 'Available Money'
-    )?.amount ?? 0;
+    );
+
+    let availableMoneyFromSelectedMonth = 0;
+
+    if (availableMoneyItem) {
+      // First month: use the stored value from database
+      availableMoneyFromSelectedMonth = availableMoneyItem.amount;
+    } else {
+      // Other months: calculate from previous month's income (excluding "Available Money")
+      // This matches the logic in monthly-expense-income.tsx
+      const currentMonthIndex = months.indexOf(selectedMonth);
+      const previousMonthIndex = currentMonthIndex === 0 ? months.length - 1 : currentMonthIndex - 1;
+      const previousMonth = months[previousMonthIndex];
+
+      const previousMonthBudget = (budgetData.monthlyBudgets ?? []).find(
+        (b: any) => b.month === previousMonth
+      );
+
+      if (previousMonthBudget?.income) {
+        // Sum of all income from previous month (excluding "Available Money")
+        availableMoneyFromSelectedMonth = (previousMonthBudget.income ?? []).reduce(
+          (sum: number, item: { amount: number; name: string }) => {
+            if (item.name === 'Available Money') {
+              return sum;
+            }
+            return sum + item.amount;
+          },
+          0
+        );
+      }
+    }
 
     const shouldHaveCalc =
       fixedSavingsAvailable +
