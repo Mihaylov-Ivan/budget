@@ -3,7 +3,6 @@ import EditBtn from "../components/edit";
 import YearlyCard from "../components/yearly-card";
 import type { YearlyCardData } from "../data";
 import { months } from "../data";
-import { useAvailableMoney } from "../hooks/useAvailableMoney";
 
 interface Props {
   budgetData: any; // Using any to avoid cross-file type circularity; structure is inferred at runtime
@@ -13,7 +12,6 @@ interface Props {
 
 export default function YearlyMoneyDistribution({ budgetData, selectedMonth, setBudgetData }: Props) {
   const [editing, setEditing] = useState(false);
-  const availableMoney = useAvailableMoney(selectedMonth, budgetData);
   const [overrideActuallyHave, setOverrideActuallyHave] = useState<number | null>(null);
 
   // Local state for the editable 'Actually Have' value
@@ -49,8 +47,7 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       return acc;
     }, 0);
 
-    // Should have – fixed savings available + yearly expenses available + available money
-    // Exclude all monthly essentials and luxury savings expenses up to the selected month
+    // Should have – fixed savings available + yearly expenses available + Available Money from monthly section
     const fixedSavingsAvailable = (budgetData.fixedSavings ?? []).reduce(
       (sum: number, s: any) => sum + (typeof s.available === "number" ? s.available : 0),
       0
@@ -61,49 +58,19 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       0
     );
 
-    // Calculate total amount allocated to savings (essentials + luxury) for the selected month only
-    const sumSectionItems = (section: any) =>
-      (section?.items ?? []).reduce((s: number, it: any) => s + (typeof it.amount === "number" ? it.amount : 0), 0);
-
+    // Get "Available Money" from the selected month's income array
     const selectedMonthBudget = (budgetData.monthlyBudgets ?? []).find(
       (b: any) => b.month === selectedMonth
     );
 
-    let savingsExpensesTotal = 0;
-    if (selectedMonthBudget) {
-      // Essentials "savings" section
-      const essentialsSavingsSection = selectedMonthBudget.essentials?.monthly?.find(
-        (s: any) => typeof s.id === "string" && s.id.trim().toLowerCase().startsWith("savings")
-      );
-      const essentialsSavings = sumSectionItems(essentialsSavingsSection);
-
-      // Luxury "savings" section
-      const luxurySavingsSection = selectedMonthBudget.luxury?.monthly?.find(
-        (s: any) => typeof s.id === "string" && s.id.trim().toLowerCase().startsWith("savings")
-      );
-      const luxurySavings = sumSectionItems(luxurySavingsSection);
-
-      savingsExpensesTotal = essentialsSavings + luxurySavings;
-    }
-
-    // Investment items whose name ends with "Savings"
-    const investmentSavingsTotal =
-      (selectedMonthBudget?.investments?.monthly ?? []).reduce(
-        (sum: number, inv: any) => {
-          const name = (inv.name ?? "").trim();
-          return /Savings\s*$/i.test(name)
-            ? sum + (typeof inv.amount === "number" ? inv.amount : 0)
-            : sum;
-        },
-        0
-      );
+    const availableMoneyFromSelectedMonth = (selectedMonthBudget?.income ?? []).find(
+      (item: { name: string; amount: number }) => item.name === 'Available Money'
+    )?.amount ?? 0;
 
     const shouldHaveCalc =
       fixedSavingsAvailable +
       yearlyExpensesAvailable +
-      availableMoney -
-      savingsExpensesTotal -
-      investmentSavingsTotal;
+      availableMoneyFromSelectedMonth;
 
     const actualVal = editing
       ? actualEditValue
@@ -115,7 +82,7 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       actuallyHave: actualVal,
       extra: actualVal - shouldHaveCalc,
     } as const;
-  }, [budgetData, selectedMonth, availableMoney, actualEditValue, editing, overrideActuallyHave]);
+  }, [budgetData, selectedMonth, actualEditValue, editing, overrideActuallyHave]);
 
   const currentActuallyHave = editing ? actualEditValue : overrideActuallyHave ?? (budgetData.yearlyDistribution?.actuallyHave ?? 0);
 
@@ -162,7 +129,7 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       id: "should-have",
       title: "Should Have",
       value: shouldHave,
-      description: "Fixed savings + expense savings + current month budget",
+      description: "Fixed savings available + yearly expenses available + Available Money",
       color: "orange",
     },
     {
