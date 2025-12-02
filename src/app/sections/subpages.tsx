@@ -36,7 +36,7 @@ export default function Subpages({ fixedSavings, yearlyExpenses, monthlyBudget, 
       {active === "Monthly Budget" && (
         <MonthlyBudget key={month} budget={monthlyBudget} month={month} budgetData={updatedBudgetData} />
       )}
-      {active === "Overview" && <Overview savings={fixedSavings} budget={monthlyBudget} />}
+      {active === "Overview" && <Overview savings={fixedSavings} budget={monthlyBudget} month={month} />}
     </section>
   );
 } 
