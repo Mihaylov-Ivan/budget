@@ -162,14 +162,14 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       id: "should-have",
       title: "Should Have",
       value: shouldHave,
-      description: "Fixed savings available + yearly expenses available + Available Money",
+      description: "Fixed savings available + yearly expenses available + Current Month Available Money",
       color: "orange",
     },
     {
       id: "actually-have",
       title: "Actually Have",
       value: actuallyHave,
-      description: "Cash + accounts + investments + debt",
+      description: "Cash + bank accounts + vouchers + debt from others - debt to others - credit card debt + overspending for expense savings",
       color: "green",
     },
     {
