@@ -2,6 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Environment Variables
+
+Create a `.env.local` file in the root directory and add the following:
+
+```env
+NEXT_PUBLIC_PASSCODE=your-secure-passcode-here
+MONGODB_URL=your-mongodb-connection-string
+NEXT_PUBLIC_WEBSITE_URL=http://localhost:5000
+```
+
+**Important:** Set `NEXT_PUBLIC_PASSCODE` to a secure passcode that will be required to access the website. This passcode is stored client-side, so choose a strong value.
+
 First, run the development server:
 
 ```bash
