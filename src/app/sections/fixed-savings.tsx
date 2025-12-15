@@ -15,7 +15,11 @@ interface Props {
 export default function FixedSavings({ data }: Props) {
   const [editing, setEditing] = useState(false);
   // Attach a stable _uid to each row for reliable keying
-  const initializeSavings = (arr: any[]) => arr.map((s) => ({ _uid: genUid(), ...s }));
+  const initializeSavings = (arr: any[]) => arr.map((s) => ({ 
+    _uid: genUid(), 
+    ...s,
+    available: (s.saved || 0) - (s.used || 0),
+  }));
   const [savings, setSavings] = useState(initializeSavings(data));
 
   // Handler to add new saving row
@@ -52,7 +56,18 @@ export default function FixedSavings({ data }: Props) {
   const handleFieldChange = useCallback((index: number, field: keyof typeof savings[number], value: string) => {
     setSavings((prev) => {
       const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value) };
+      const saving = copy[index];
+      const updatedSaving = { 
+        ...saving, 
+        [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value) 
+      };
+      
+      // Auto-calculate available when saved or used changes
+      if (field === "saved" || field === "used") {
+        updatedSaving.available = (updatedSaving.saved || 0) - (updatedSaving.used || 0);
+      }
+      
+      copy[index] = updatedSaving;
       return copy;
     });
   }, []);
@@ -140,9 +155,10 @@ export default function FixedSavings({ data }: Props) {
                     <input
                       type="number"
                       step="0.01"
-                      value={saving.available}
-                      onChange={(e) => handleFieldChange(idx as number, "available", e.target.value)}
-                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                      value={(saving.saved || 0) - (saving.used || 0)}
+                      readOnly
+                      disabled
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 opacity-60 cursor-not-allowed"
                     />
                   </td>
                   <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2 justify-center items-center">

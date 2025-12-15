@@ -17,7 +17,11 @@ const genUid = () => Math.random().toString(36).slice(2) + Date.now();
 
 export default function YearlyExpenses({ data, setData }: Props) {
   const [editing, setEditing] = useState(false);
-  const initialize = (arr: any[]) => arr.map((e) => ({ _uid: genUid(), ...e }));
+  const initialize = (arr: any[]) => arr.map((e) => ({
+    _uid: genUid(),
+    ...e,
+    available: (e.saved || 0) - (e.used || 0),
+  }));
   const [expenses, setExpenses] = useState(initialize(data));
 
   // Handler to add new yearly expense row
@@ -66,13 +70,49 @@ export default function YearlyExpenses({ data, setData }: Props) {
   ) => {
     setExpenses((prev) => {
       const copy = [...prev];
+      const expense = copy[index];
       //@ts-ignore
-      copy[index] = {
-        ...copy[index],
+      const updatedExpense = {
+        ...expense,
         [field]:
           field === "name" || field === "totalShouldBe" || field === "startMonth"
             ? value
             : value === "" ? 0 : parseFloat(value),
+      };
+
+      // Auto-calculate available when saved or used changes
+      if (field === "saved" || field === "used") {
+        updatedExpense.available = (updatedExpense.saved || 0) - (updatedExpense.used || 0);
+      }
+
+      copy[index] = updatedExpense;
+      return copy;
+    });
+  }, []);
+
+  const handleSavedClick = useCallback((index: number) => {
+    setExpenses((prev) => {
+      const copy = [...prev];
+      const expense = copy[index];
+      const newSaved = (expense.saved || 0) + (expense.monthlySaving || 0);
+      copy[index] = {
+        ...expense,
+        saved: newSaved,
+        available: newSaved - (expense.used || 0),
+      };
+      return copy;
+    });
+  }, []);
+
+  const handleMissedClick = useCallback((index: number) => {
+    setExpenses((prev) => {
+      const copy = [...prev];
+      const expense = copy[index];
+      const newMissed = (expense.missed || 0) + (expense.monthlySaving || 0);
+      copy[index] = {
+        ...expense,
+        missed: newMissed,
+        available: (expense.saved || 0) - (expense.used || 0),
       };
       return copy;
     });
@@ -207,19 +247,20 @@ export default function YearlyExpenses({ data, setData }: Props) {
                     <input
                       type="number"
                       step="0.01"
-                      value={exp.available}
-                      onChange={(e) => handleFieldChange(idx, "available", e.target.value)}
-                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                      value={(exp.saved || 0) - (exp.used || 0)}
+                      readOnly
+                      disabled
+                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 opacity-60 cursor-not-allowed"
                     />
                   </td>
                   <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2 justify-center items-center">
                     <Button
                       label="Saved"
-                      onClick={() => { /* TODO: implement saved action */ }}
+                      onClick={() => handleSavedClick(idx)}
                     />
                     <Button
                       label="Missed"
-                      onClick={() => { /* TODO: implement missed action */ }}
+                      onClick={() => handleMissedClick(idx)}
                     />
                     <Delete
                       onClick={() => setExpenses((prev) => prev.filter((e) => e._uid !== exp._uid))}

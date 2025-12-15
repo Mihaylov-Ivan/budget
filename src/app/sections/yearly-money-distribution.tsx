@@ -48,13 +48,22 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
     }, 0);
 
     // Should have – fixed savings available + yearly expenses available + Available Money from monthly section
+    // Calculate available dynamically as Saved - Used (not relying on stored available value)
     const fixedSavingsAvailable = (budgetData.fixedSavings ?? []).reduce(
-      (sum: number, s: any) => sum + (typeof s.available === "number" ? s.available : 0),
+      (sum: number, s: any) => {
+        const saved = typeof s.saved === "number" ? s.saved : 0;
+        const used = typeof s.used === "number" ? s.used : 0;
+        return sum + (saved - used);
+      },
       0
     );
 
     const yearlyExpensesAvailable = (budgetData.yearlyExpenses ?? []).reduce(
-      (sum: number, e: any) => sum + (typeof e.available === "number" ? e.available : 0),
+      (sum: number, e: any) => {
+        const saved = typeof e.saved === "number" ? e.saved : 0;
+        const used = typeof e.used === "number" ? e.used : 0;
+        return sum + (saved - used);
+      },
       0
     );
 
@@ -169,7 +178,7 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       id: "actually-have",
       title: "Actually Have",
       value: actuallyHave,
-      description: "Cash + bank accounts + vouchers + debt from others - debt to others - credit card debt + overspending for expense savings",
+      description: "Cash + bank accounts + vouchers + debt from others - debt to others - credit card debt",
       color: "green",
     },
     {
