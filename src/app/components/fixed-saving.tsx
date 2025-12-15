@@ -16,7 +16,7 @@ export default function FixedSaving({
 }: FixedSavingProps) {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
     minimumFractionDigits: 2,
   });
 

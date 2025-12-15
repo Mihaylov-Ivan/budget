@@ -8,7 +8,7 @@ interface OverviewCardProps {
 export default function OverviewCard({ title, value }: OverviewCardProps) {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
   });
 
   return (

@@ -11,7 +11,7 @@ const textColors = {
 export default function YearlyCard({ title, value, description, color }: YearlyCardData) {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
   });
 
   return (

@@ -17,7 +17,7 @@ const textColors = {
 export default function BudgetItem({ name, amount, color, warning = false, highlight = false }: BudgetItemProps) {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
     minimumFractionDigits: 2,
   });
 
