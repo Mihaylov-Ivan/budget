@@ -1,31 +1,12 @@
 - add current year dropdown
-- going over budget for an expense is compensated by another one by user choice
-- expense records used to determine how much each expense should be, giving suggestions on how to adapt the budget
-- auto calculated missed in monthly savings for yearly expenses
-
-- remove dollar sign
-- add missed, saved btn functionality
-
 - available money for first month improvements
 
-- ensure savings items end with savings word, hardcoded within the name and unchangeable
-- better section separation and layout
-
-- yearly month selection dropdown
-- auto estimation of missed and saved based on starting month of saving
-
-- when editing an amount, ask user if he wants to update all future ones too
-
 - when editing a section, blurr all the rest out and pop up
-
-- completed savings coloured differently
-- 0.00 should be rounded to 0
+- auto calculated missed in monthly savings for yearly expenses
 - page refresh when savings edited to update yearly distribution, and when name field changed in monthly budget to updated following months names; or figure out dynamic updating
-
 - yearly expenses divided into essential and lux, auto added to monthly budget breakdown
-
-- colouring when things not correct - red when priority fixed savings not full
 - able to reorder list items
 
-- add passcode
-- allow negative numbers
+- going over budget for an expense is compensated by another one by user choice
+- expense records used to determine how much each expense should be, giving suggestions on how to adapt the budget
+- ensure savings items end with savings word, hardcoded within the name and unchangeable

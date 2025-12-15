@@ -101,13 +101,55 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
   const availableForLuxury = (availableMoney - essentialsTotal) * (percentage / 100);
   const unassigned = availableForLuxury - total;
 
+  // Helper to check if a yearly expense is completed (total === saved)
+  const isYearlyExpenseCompleted = (yearlyExpense: any): boolean => {
+    const total = typeof yearlyExpense.total === "number" ? yearlyExpense.total : 0;
+    const saved = typeof yearlyExpense.saved === "number" ? yearlyExpense.saved : 0;
+    return total > 0 && total === saved;
+  };
+
+  // Helper to check if a fixed saving is completed (total === available)
+  const isFixedSavingCompleted = (fixedSaving: any): boolean => {
+    const total = typeof fixedSaving.total === "number" ? fixedSaving.total : 0;
+    const saved = typeof fixedSaving.saved === "number" ? fixedSaving.saved : 0;
+    const used = typeof fixedSaving.used === "number" ? fixedSaving.used : 0;
+    const available = saved - used;
+    return total > 0 && total === available;
+  };
+
   // Populate `shouldBe` for savings items based on yearly expenses monthlySaving and available money percentages
+  // Set to 0 if the corresponding yearly expense or fixed saving is completed
   useEffect(() => {
     setMonthlySections((prev) => {
       const clone: Section[] = JSON.parse(JSON.stringify(prev));
       const savingsSection = clone.find((s) => s.id === "savings");
       if (savingsSection) {
         savingsSection.items = savingsSection.items.map((it) => {
+          // First, check if this item maps to a completed yearly expense or fixed saving
+          // Check yearly expenses
+          if (budgetData?.yearlyExpenses) {
+            const yearlyName = mapSavingsToYearly(it.name);
+            const yearlyMatch: YearlyExpenseType | undefined = budgetData.yearlyExpenses.find(
+              (y: any) => y.name === yearlyName
+            );
+            if (yearlyMatch && isYearlyExpenseCompleted(yearlyMatch)) {
+              return { ...it, shouldBe: 0 };
+            }
+          }
+
+          // Check fixed savings (remove percentage suffix and "Savings" suffix for matching)
+          if (budgetData?.fixedSavings) {
+            const nameWithoutPercentage = it.name.replace(/\s*\(.*?\)$/, "").trim();
+            const nameWithoutSavings = nameWithoutPercentage.replace(/\s*Savings.*$/i, "").trim();
+            const fixedSavingMatch = budgetData.fixedSavings.find(
+              (fs: any) => fs.name === nameWithoutPercentage || fs.name === nameWithoutSavings
+            );
+            if (fixedSavingMatch && isFixedSavingCompleted(fixedSavingMatch)) {
+              return { ...it, shouldBe: 0 };
+            }
+          }
+
+          // If not completed, calculate shouldBe normally
           // Calculate shouldBe based on percentage values in brackets at the end of field names
           const percentageMatch = it.name.match(/\((\d+(?:\.\d+)?)%\)$/);
           if (percentageMatch) {
@@ -115,7 +157,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
             return { ...it, shouldBe: availableForLuxury * percentageValue };
           }
 
-          // Fall back to yearly expenses logic for other savings items
+          // Fall back to yearly expenses monthlySaving for other savings items
           if (budgetData?.yearlyExpenses) {
             const yearlyName = mapSavingsToYearly(it.name);
             const match: YearlyExpenseType | undefined = budgetData.yearlyExpenses.find(
@@ -125,6 +167,7 @@ export default function MonthlyExpenseLuxury({ luxury, month, daysInMonth, budge
               return { ...it, shouldBe: match.monthlySaving };
             }
           }
+
           return it;
         });
       }

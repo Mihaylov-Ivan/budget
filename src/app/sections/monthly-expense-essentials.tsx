@@ -79,7 +79,15 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
     return base;
   };
 
+  // Helper to check if a yearly expense is completed (total === saved)
+  const isYearlyExpenseCompleted = (yearlyExpense: any): boolean => {
+    const total = typeof yearlyExpense.total === "number" ? yearlyExpense.total : 0;
+    const saved = typeof yearlyExpense.saved === "number" ? yearlyExpense.saved : 0;
+    return total > 0 && total === saved;
+  };
+
   // Populate `shouldBe` for savings items based on yearly expenses monthlySaving
+  // Set to 0 if the yearly expense is completed
   useEffect(() => {
     if (!budgetData?.yearlyExpenses) return;
 
@@ -93,7 +101,9 @@ export default function MonthlyExpenseEssentials({ essentials, month, daysInMont
             (y: any) => y.name === yearlyName
           );
           if (match) {
-            return { ...it, shouldBe: match.monthlySaving };
+            // If the yearly expense is completed, set shouldBe to 0
+            const shouldBe = isYearlyExpenseCompleted(match) ? 0 : match.monthlySaving;
+            return { ...it, shouldBe };
           }
           return it;
         });

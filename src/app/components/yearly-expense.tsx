@@ -27,8 +27,13 @@ export default function YearlyExpense({
 
   const formatNum = (val: number) => currency.format(val);
 
+  const isCompleted = typeof total === "number" && typeof saved === "number" && total > 0 && total === saved;
+
   return (
-    <tr className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
+    <tr
+      className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]"
+      style={isCompleted ? { backgroundColor: 'rgba(23, 163, 74, 0.15)' } : undefined}
+    >
       <td className="py-4 px-3 whitespace-nowrap text-sm font-medium">
         {name}
       </td>

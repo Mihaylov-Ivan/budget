@@ -68,7 +68,6 @@ export default function Home() {
           <h1 className="text-3xl sm:text-4xl font-bold">Personal Budget Tracker</h1>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-medium">Current Month:</span>
           <Dropdown value={selectedMonth} onChange={setSelectedMonth} />
         </div>
       </header>

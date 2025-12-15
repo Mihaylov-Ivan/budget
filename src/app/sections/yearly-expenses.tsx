@@ -172,8 +172,17 @@ export default function YearlyExpenses({ data, setData }: Props) {
           </thead>
           <tbody className="bg-[var(--surface-1)]">
             {editing
-              ? expenses.map((exp, idx) => (
-                <tr key={exp._uid} className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
+              ? expenses.map((exp, idx) => {
+                  const total = typeof exp.total === "number" ? exp.total : 0;
+                  const saved = typeof exp.saved === "number" ? exp.saved : 0;
+                  const isCompleted = total > 0 && total === saved;
+                  
+                  return (
+                <tr 
+                  key={exp._uid} 
+                  className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]"
+                  style={isCompleted ? { backgroundColor: 'rgba(23, 163, 74, 0.15)' } : undefined}
+                >
                   <td className="py-2 px-3 whitespace-nowrap text-sm">
                     <input
                       type="text"
@@ -267,7 +276,8 @@ export default function YearlyExpenses({ data, setData }: Props) {
                     />
                   </td>
                 </tr>
-              ))
+                  );
+                })
               : expenses.map((e) => (
                 <YearlyExpense key={e.name} {...e} editing={false} />
               ))}

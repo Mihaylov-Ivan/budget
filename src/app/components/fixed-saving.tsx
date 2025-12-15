@@ -25,8 +25,13 @@ export default function FixedSaving({
     return formatter.format(v);
   };
 
+  const isCompleted = typeof total === "number" && typeof available === "number" && total > 0 && total === available;
+
   return (
-    <tr className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
+    <tr
+      className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]"
+      style={isCompleted ? { backgroundColor: 'rgba(23, 163, 74, 0.15)' } : undefined}
+    >
       <td className="py-4 px-3 whitespace-nowrap text-sm font-medium">
         {name}
       </td>

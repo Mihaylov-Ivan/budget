@@ -15,8 +15,8 @@ interface Props {
 export default function FixedSavings({ data }: Props) {
   const [editing, setEditing] = useState(false);
   // Attach a stable _uid to each row for reliable keying
-  const initializeSavings = (arr: any[]) => arr.map((s) => ({ 
-    _uid: genUid(), 
+  const initializeSavings = (arr: any[]) => arr.map((s) => ({
+    _uid: genUid(),
     ...s,
     available: (s.saved || 0) - (s.used || 0),
   }));
@@ -57,16 +57,16 @@ export default function FixedSavings({ data }: Props) {
     setSavings((prev) => {
       const copy = [...prev];
       const saving = copy[index];
-      const updatedSaving = { 
-        ...saving, 
-        [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value) 
+      const updatedSaving = {
+        ...saving,
+        [field]: field === "name" ? value : value === "" ? 0 : parseFloat(value)
       };
-      
+
       // Auto-calculate available when saved or used changes
       if (field === "saved" || field === "used") {
         updatedSaving.available = (updatedSaving.saved || 0) - (updatedSaving.used || 0);
       }
-      
+
       copy[index] = updatedSaving;
       return copy;
     });
@@ -114,61 +114,71 @@ export default function FixedSavings({ data }: Props) {
           </thead>
           <tbody className="bg-[var(--surface-1)]">
             {editing
-              ? savings.map((saving, idx) => (
-                <tr key={saving._uid} className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]">
-                  <td className="py-2 px-3 whitespace-nowrap text-sm">
-                    <input
-                      type="text"
-                      value={saving.name}
-                      onChange={(e) => handleFieldChange(idx as number, "name", e.target.value)}
-                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
-                    />
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-sm">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={typeof saving.total === "number" ? saving.total : 0}
-                      onChange={(e) => handleFieldChange(idx as number, "total", e.target.value)}
-                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
-                    />
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-sm">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={saving.saved}
-                      onChange={(e) => handleFieldChange(idx as number, "saved", e.target.value)}
-                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
-                    />
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-sm">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={saving.used}
-                      onChange={(e) => handleFieldChange(idx as number, "used", e.target.value)}
-                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
-                    />
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-sm">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={(saving.saved || 0) - (saving.used || 0)}
-                      readOnly
-                      disabled
-                      className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 opacity-60 cursor-not-allowed"
-                    />
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2 justify-center items-center">
-                    {/* Delete still available while editing */}
-                    <Delete
-                      onClick={() => setSavings((prev) => prev.filter((s) => s._uid !== saving._uid))}
-                    />
-                  </td>
-                </tr>
-              ))
+              ? savings.map((saving, idx) => {
+                const total = typeof saving.total === "number" ? saving.total : 0;
+                const available = (saving.saved || 0) - (saving.used || 0);
+                const isCompleted = total > 0 && total === available;
+
+                return (
+                  <tr
+                    key={saving._uid}
+                    className="border-b border-[var(--surface-3)] hover:bg-[var(--surface-3)]"
+                    style={isCompleted ? { backgroundColor: 'rgba(23, 163, 74, 0.15)' } : undefined}
+                  >
+                    <td className="py-2 px-3 whitespace-nowrap text-sm">
+                      <input
+                        type="text"
+                        value={saving.name}
+                        onChange={(e) => handleFieldChange(idx as number, "name", e.target.value)}
+                        className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                      />
+                    </td>
+                    <td className="py-2 px-3 whitespace-nowrap text-sm">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={typeof saving.total === "number" ? saving.total : 0}
+                        onChange={(e) => handleFieldChange(idx as number, "total", e.target.value)}
+                        className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                      />
+                    </td>
+                    <td className="py-2 px-3 whitespace-nowrap text-sm">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={saving.saved}
+                        onChange={(e) => handleFieldChange(idx as number, "saved", e.target.value)}
+                        className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                      />
+                    </td>
+                    <td className="py-2 px-3 whitespace-nowrap text-sm">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={saving.used}
+                        onChange={(e) => handleFieldChange(idx as number, "used", e.target.value)}
+                        className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1"
+                      />
+                    </td>
+                    <td className="py-2 px-3 whitespace-nowrap text-sm">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={(saving.saved || 0) - (saving.used || 0)}
+                        readOnly
+                        disabled
+                        className="w-full bg-transparent border border-[var(--surface-4)] rounded px-2 py-1 opacity-60 cursor-not-allowed"
+                      />
+                    </td>
+                    <td className="py-2 px-3 whitespace-nowrap text-sm flex gap-2 justify-center items-center">
+                      {/* Delete still available while editing */}
+                      <Delete
+                        onClick={() => setSavings((prev) => prev.filter((s) => s._uid !== saving._uid))}
+                      />
+                    </td>
+                  </tr>
+                );
+              })
               : savings.map((saving) => (
                 <FixedSaving key={saving.name} {...saving} editing={false} />
               ))}
