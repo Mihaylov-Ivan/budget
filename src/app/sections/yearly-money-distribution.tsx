@@ -109,10 +109,44 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       }
     }
 
+    // Sum of all monthly budget item amounts (selected month) where name includes "savings"
+    // (from essentials, luxury, and investments) – these are already allocated and should not
+    // be counted again in "Should Have"
+    const sumSavingsFromSections = (sections: any[]) => {
+      if (!Array.isArray(sections)) return 0;
+      return sections.reduce((acc: number, sec: any) => {
+        const items = sec?.items ?? [];
+        return (
+          acc +
+          items.reduce((s: number, it: any) => {
+            if (typeof it?.name === "string" && it.name.toLowerCase().includes("savings")) {
+              return s + (typeof it?.amount === "number" ? it.amount : 0);
+            }
+            return s;
+          }, 0)
+        );
+      }, 0);
+    };
+    const monthlySavingsFromEssentials = sumSavingsFromSections(selectedMonthBudget?.essentials?.monthly ?? []);
+    const monthlySavingsFromLuxury = sumSavingsFromSections(selectedMonthBudget?.luxury?.monthly ?? []);
+    const monthlySavingsFromInvestments = (selectedMonthBudget?.investments?.monthly ?? []).reduce(
+      (s: number, it: any) => {
+        if (typeof it?.name === "string" && it.name.toLowerCase().includes("savings")) {
+          return s + (typeof it?.amount === "number" ? it.amount : 0);
+        }
+        return s;
+      },
+      0
+    );
+    const totalMonthlySavings =
+      monthlySavingsFromEssentials + monthlySavingsFromLuxury + monthlySavingsFromInvestments;
+
+    // Should have = fixed savings available + yearly expenses available + (Current Month Available Money − monthly savings)
+    const currentMonthAvailableAfterSavings = availableMoneyFromSelectedMonth - totalMonthlySavings;
     const shouldHaveCalc =
       fixedSavingsAvailable +
       yearlyExpensesAvailable +
-      availableMoneyFromSelectedMonth;
+      currentMonthAvailableAfterSavings;
 
     const actualVal = editing
       ? actualEditValue
@@ -171,7 +205,7 @@ export default function YearlyMoneyDistribution({ budgetData, selectedMonth, set
       id: "should-have",
       title: "Should Have",
       value: shouldHave,
-      description: "Fixed savings available + yearly expenses available + Current Month Available Money",
+      description: "Fixed savings available + yearly expenses available + (Current Month Available Money − monthly budget savings)",
       color: "orange",
     },
     {
